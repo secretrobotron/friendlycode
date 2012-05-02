@@ -10,15 +10,25 @@
   </html>
   <body>
 
-    <!-- header -->
-    <div id="header">
-      <h1 class="title">Web Page Maker - remix the web!</h1>
-      <div id="publish-box">
-        <div id="publish">Publish</div>
-        <div id="publish-text">← Click here when you're done remixing!</div>
-      </div>  
-    </div>
-    
+    <!-- header -->    
+	<header id="header">
+      <div class="busta">
+        <a id="tabzilla" href="http://www.mozilla.org" class="tabzilla-closed">mozilla.org</a>
+        <div class="logo">
+          <a href=".">
+            <img src="img/mozilla-logo.png">
+            WEBPAGE MAKER
+          </a>
+        </div>
+      </div>
+	  <div id="publish-box">
+        <a class="button blue" id="save_button">SAVE</a>
+        <a class="button" id="share_button">SHARE</a>
+        <!--<div id="publish-text">← Click here when you're done remixing!</div>-->
+	  </div>
+    </header>
+
+
     <!-- modal overlay -->
     <div id="publish-dialog" style="display: none">
       <h1>Hold on a sec.</h1>
