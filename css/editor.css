@@ -86,10 +86,6 @@ iframe {
   background: url("../img/codemirror-gutter.png") repeat-y, url("../img/editor-left-texture.png") repeat;
 }
 
-.CodeMirror-scroll.cm-s-jsbin {
-  height: 100%;
-}
-
 #live-render {
   border-left: 1px solid black;
   margin-left: -1px;
@@ -347,3 +343,8 @@ b {
 .content em {
   color: rgb(0,130,255);
 }
+
+/*
+  CodeMirror styling gets local overrides
+*/
+@import url("CodeMirrorOverrides.css");
