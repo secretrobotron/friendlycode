@@ -22,18 +22,20 @@ iframe {
   z-index: 2;
   top: 0;
 
-  background-color: rgb(210,210,210);
-  background: url("../img/topnav-texture.png") repeat;
+  background-color: #D2D2D2;
+  background-image: url("../img/embroidery-texture.png"), url("../img/topnav-texture.png");
+  background-position: left top, left center;
+  background-repeat: repeat, repeat;  background-color: rgb(210,210,210);
 
   font-family: OpenSansRegular;
   color: #333;
 
-  height: 8em;                    /* NOTE: this value MUST agree with [#html-editor, #live-render].margin-top */
+  height: 8em;                    /* NOTE: this value + border-bottom MUST agree with [#html-editor, #live-render].margin-top */
   width: 100%;
   margin: 0px;
   padding: 0px;
 
-  border-bottom: 1px solid black;
+  border-bottom: 0.5em solid #7ba127; /* NOTE: this value + height MUST agree with [#html-editor, #live-render].margin-top */
 }
 
 
@@ -50,6 +52,10 @@ iframe {
   margin: 0px;
   padding: 0px;
   z-index: 1000;
+
+
+  -webkit-box-shadow: 0px -5px 10px -8px rgba(0, 0, 0, 1);
+  box-shadow: 0px -5px 10px -8px rgba(0, 0, 0, 1);
 }
 
 #split-pane {
@@ -68,22 +74,22 @@ iframe {
   display: inline-block;
   position: fixed;
   top: 0px;
-  margin-top: 8em;                /* NOTE: this value MUST agree with [#header].height */
-
+  margin-top: 8.5em;                /* NOTE: this value MUST agree with [#header].height */
   width: 50%;
+  height: 100%;
   overflow: hidden;
 }
 
 #html-editor {
   background-color: white;
   overflow: auto;
+  overflow-y: scroll;
   background: url("../img/codemirror-gutter.png") repeat-y, url("../img/editor-left-texture.png") repeat;
 }
 
 #html-editor,
 .CodeMirror-scroll.cm-s-jsbin {
   height: 100%;
-  overflow: hidden;
 }
 
 #live-render {
@@ -164,8 +170,8 @@ code {
   padding: 1px 2px 1px 2px;
   margin: 0px 2px 0px 2px;
   font-size: smaller;
-  background: lightgray;
-  color: #222222;
+  background: rgb(0,130,255);
+  color: white;
 }
 
 .help a.learn-more:hover {
@@ -252,6 +258,7 @@ code {
     /* EDIT LOGO INSTEAD */
     position: relative;
     left: -5px;
+    top: 0.2em;
 }
 
 img {
@@ -284,14 +291,58 @@ img {
     width: 16px;
 }
 
-#save_button {
+#save_button, #share_button {
   position: relative;
   right: 8em;
-  top: -2em;
+  top: -1em;
+  cursor: pointer;
 }
 
 #share_button {
-  position: relative;
   right: 7em;
-  top: -2em;
+}
+
+.error,
+.help {
+  display: table-row;
+  width: 100%;
+}
+
+.error .icon,
+.help .icon,
+.error .content,
+.help .content {
+  display: table-cell;
+}
+
+.error .icon img,
+.help .icon img {
+  height: 3em;
+  width: 3em;
+  margin: 1em;
+  margin-left: 2em;
+  vertical-align: middle;
+}
+
+.button {
+  padding: 0px 1.5em;
+}
+
+div.logo a {
+  color: #7c9e30;
+}
+
+b {
+  font-family: OpenSansRegular, sans-serif;
+}
+
+.content {
+  color: #666;
+}
+.content strong {
+  color: #7c9e30;
+  font-family: OpenSansRegular, sans-serif;	
+}
+.content code {
+  color: rgb(0,130,255);
 }

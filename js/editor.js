@@ -12,10 +12,11 @@ var errorHelpMarks = null;
 
 // Report the given Slowparse error.
 function reportError(error) {
-  $(".error").fillError(error).eachErrorHighlight(function(start, end, i) {
+  $(".help").hide();
+  $(".error").show();
+  $(".error .content").fillError(error).eachErrorHighlight(function(start, end, i) {
     errorHelpMarks.mark(start, end, "highlight-" + (i+1));
   });
-  $(".help").hide();
 }
 
 // Update the preview area with the given HTML.
@@ -50,9 +51,11 @@ function onCursorActivity() {
   cursorHelpMarks.clear();
   var help = helpIndex.get(editor.getCursorIndex());
   if (help) {
+	$(".error").hide();
+	$(".help").show();
     var learn = $("#templates .learn-more").clone()
       .attr("href", help.url);
-    $(".help").html(help.html).append(learn).show();
+    $(".help .content").html(help.html).append(learn).show();
     help.highlights.forEach(function(interval) {
       cursorHelpMarks.mark(interval.start, interval.end,
                            "cursor-help-highlight");
