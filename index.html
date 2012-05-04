@@ -27,8 +27,65 @@
 	  </div>
     </header>
 
-
-    <!-- modal overlay -->
+    <!-- modal overlays -->
+    <div id="share-dialog" style="
+			z-index: 2000;
+			display: block;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			background-color: rgba(0,0,0,0.2); 
+			height: 100%; 
+			width: 100%;">
+      <div class="modal-box" style="height: 400px; 
+									width: 600px; 
+									position: relative; 
+									top: 50%; 
+									left: 50%; 
+									margin-top: -200px; 
+									margin-left: -300px; 
+									background-color: #f2ebf2;
+									border-radius: 10px;
+									padding: 10px;
+									-webkit-box-shadow: 8px 8px 5px 0px #000000;
+									box-shadow: 8px 8px 5px 0px #000000;">
+	    <div class="close-icon" style="text-align: right; position:relative; right:-35px; top:-30px;">
+	    	<img src="img/temp-icon.png" onclick="this.parentNode.parentNode.parentNode.style.display='none'">
+	    </div>
+	    <div class="" style="text-align: center;
+							 color: #666; 
+							 font-family: OpenSansRegular;
+							 font-size: 150%;
+							 letter-spacing: 1px;"><strong>choose</strong> <span style="font-family: OpenSansLight">how you want to share:</span></div>
+	    <div class"button-bar" style="text-align: center;">
+		  <style type="text/css">
+		    ul.share-buttons {
+			  
+		    }
+		    ul.share-buttons li {
+			  display: inline-block;
+			  margin: 0.5em;
+		    }
+	      </style>
+		  <ul class="share-buttons">
+		  	<li><a href="1"><img src="img/temp-icon.png" alt="share with twitter"></a></li>
+		  	<li><a href="2"><img src="img/temp-icon.png" alt="share with facebook"></a></li>
+		  	<li><a href="3"><img src="img/temp-icon.png" alt="share with google+"></a></li>
+		  	<li><a href="4"><img src="img/temp-icon.png" alt="embed as link"></a></li>
+		  	<li><a href="5"><img src="img/temp-icon.png" alt="download code"></a></li>
+		  	<li><a href="6"><img src="img/temp-icon.png" alt="email to a friend"></a></li>
+		  </ul>
+		</div>
+	    <div class="box-title" style="width: 350px; margin: auto;">
+	    	here is the source code for your webpage:
+	    </div>
+	    <div class="box" style="width: 200px;
+								height: 100px;
+								border: 20px solid #79a327;
+								margin: auto;"></div>
+      </div>
+	</div>
+	
     <div id="publish-dialog" style="display: none">
       <h1>Hold on a sec.</h1>
       <p>We are publishing your thing.</p>
@@ -69,6 +126,9 @@
   </body>
 
 <script type="text/html" id="initial-html">
+<!--
+    This is a comment, but you could insert a nyan cat here too! O_O
+-->
 <style>
   body {
     background-color: white;
