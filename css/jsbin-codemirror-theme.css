@@ -23,3 +23,11 @@
   font-size: 12px;
   line-height: 1.2em;
 }
+
+.CodeMirror-gutter {
+  background-color: #b9b8b3;
+}
+
+.CodeMirror-gutter-text {
+  color: #FCFCFC;
+}

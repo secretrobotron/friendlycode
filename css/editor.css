@@ -23,7 +23,7 @@ iframe {
   top: 0;
 
   background-color: #D2D2D2;
-  background-image: url("../img/embroidery-texture.png"), url("../img/topnav-texture.png");
+  background-image: url("../img/embroidery-texture.png"), url("../img/furley_bg.png");
   background-position: left top, left center;
   background-repeat: repeat, repeat;  background-color: rgb(210,210,210);
 
@@ -43,7 +43,7 @@ iframe {
   position: fixed;
   bottom: 0;
 
-  background-color: white;
+  background-color: rgba(255,255,255,0.1);
   border-top: 1px solid black;
   color: #333;
 
@@ -76,18 +76,16 @@ iframe {
   top: 0px;
   margin-top: 8.5em;                /* NOTE: this value MUST agree with [#header].height */
   width: 50%;
-  height: 100%;
   overflow: hidden;
 }
 
 #html-editor {
-  background-color: white;
+  background-color: rgb(255,255,240);
   overflow: auto;
   overflow-y: scroll;
   background: url("../img/codemirror-gutter.png") repeat-y, url("../img/editor-left-texture.png") repeat;
 }
 
-#html-editor,
 .CodeMirror-scroll.cm-s-jsbin {
   height: 100%;
 }
@@ -344,5 +342,8 @@ b {
   font-family: OpenSansRegular, sans-serif;	
 }
 .content code {
+  color: rgb(0,130,255);
+}
+.content em {
   color: rgb(0,130,255);
 }
