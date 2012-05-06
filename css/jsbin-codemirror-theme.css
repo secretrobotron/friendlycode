@@ -44,7 +44,12 @@
   background-color: rgba(30,150,255,0.5) !important;
 }
 
+.CodeMirror-wrap .CodeMirror-scroll {
+  overflow: hidden;
+}
+
 .CodeMirror-scroll.cm-s-jsbin {
   height: 100%;
 }
+
 

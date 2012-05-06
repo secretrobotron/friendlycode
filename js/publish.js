@@ -34,7 +34,7 @@ $(window).bind("editorloaded", function() {
     dlg.hide();
     return false;
   });
-  $("#share_button").click(function() {
+  $("#save_button").click(function() {
     dlg.show();
     $(".done", dlg).hide();
     $.ajax({
