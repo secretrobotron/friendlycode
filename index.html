@@ -28,62 +28,6 @@
 	  </div>
     </header>
 
-    <!-- modal overlays -->
-    <div id="share-dialog" style="display: none;">
-      <div class="modal-box">
-        <div class="close-icon"><img src="img/temp-icon.png"></div>
-
-        <div class="modal-title">
-          <strong>choose</strong>
-          <span class="light-text">how you want to share:</span>
-        </div>
-
-        <div class="button-bar">
-          <ul id="share-buttons">
-            <li><a id="socialshare-widget"><img src="img/chopped/twitter.png"  alt="share with twitter"></a></li>
-            <li><a id="socialshare-widget"><img src="img/chopped/facebook.png" alt="share with facebook"></a></li>
-            <li><a id="socialshare-widget"><img src="img/chopped/google.png"   alt="share with google+"></a></li>
-            <li><a id="link-to-this"><img src="img/chopped/link.png"      alt="embed as link"></a></li>
-            <li><a id="download-code"><img src="img/chopped/download.png" alt="download code"></a></li>
-            <li><a id="mail-this"><img src="img/chopped/email.png"        alt="email to a friend"></a></li>
-          </ul>
-        </div>
-        
-        <div class="modal-selections">
-          <!-- twitter, facebook and goolge+ use socialshare -->
-          <div class="socialshare-widget" style="display: none">
-            share your page on social media
-            <div class="content-box">
-              click here to pick a social medium
-            </div>
-          </div>
-
-          <div class="link-to-this" style="display: none">
-            get the link for your page
-            <div class="content-box">
-              your link is: http://lolcats.example.org
-            </div>
-          </div>
-
-          <div class="download-code" style="display: none">
-            get the source code for your page:
-            <div class="content-box">
-              autoresolving JS to grab page content from editor component
-            </div>
-          </div>
-
-          <div class="mail-this" style="display: none">
-            mail this to a friend
-            <div class="content-box">
-              mailto:lolcats@example.org
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-    <!-- modal overlay end -->
-	
     <div id="publish-dialog" style="display: none">
       <h1>Hold on a sec.</h1>
       <p>We are publishing your thing.</p>
@@ -121,6 +65,65 @@
     <div id="templates" style="display: none">
       <a class="learn-more" href="">more…</a>
     </div>
+    
+    
+    <!-- modal overlay (not a template) -->
+    <div id="share-dialog" style="display: none;">
+      <div class="modal-box">
+        <div class="close-icon"><img src="img/temp-icon.png"></div>
+
+        <div class="modal-title">
+          <strong>choose</strong>
+          <span class="light-text">how you want to share:</span>
+        </div>
+
+        <div class="button-bar">
+          <ul id="share-buttons">
+            <li><a id="socialshare-widget"><img src="img/chopped/twitter.png"  alt="share with twitter"></a></li>
+            <li><a id="socialshare-widget"><img src="img/chopped/facebook.png" alt="share with facebook"></a></li>
+            <li><a id="socialshare-widget"><img src="img/chopped/google.png"   alt="share with google+"></a></li>
+            <li><a id="link-to-this"><img src="img/chopped/link.png"      alt="embed as link"></a></li>
+            <li><a id="download-code"><img src="img/chopped/download.png" alt="download code"></a></li>
+            <li><a id="mail-this"><img src="img/chopped/email.png"        alt="email to a friend"></a></li>
+          </ul>
+        </div>
+        
+        <div class="modal-selections">
+          <!-- twitter, facebook and goolge+ use socialshare -->
+          <div class="modal-selection socialshare-widget" style="display: none">
+            share your page on social media
+            <div class="content-box">
+              click here to pick a social medium<br>
+              &lt;JS link here&gt;
+            </div>
+          </div>
+
+          <div class="modal-selection link-to-this" style="display: none">
+            get the link for your page
+            <div class="content-box">
+              your link is: http://lolcats.example.org
+            </div>
+          </div>
+
+          <div class="modal-selection download-code" style="display: none">
+            get the source code for your page:
+            <div class="content-box">
+              autoresolving &lt;JS&gt; to grab page content from editor component
+            </div>
+          </div>
+
+          <div class="modal-selection mail-this" style="display: none">
+            mail this to a friend
+            <div class="content-box">
+              mailto:lolcats@example.org
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!-- modal overlay end -->
+    
   </body>
 
 <script type="text/html" id="initial-html">

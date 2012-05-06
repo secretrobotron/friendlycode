@@ -79,3 +79,8 @@
   color: #666;
   font-family: OpenSansRegular;
 }
+
+.modal-selection {
+  width: 340px;
+  margin: auto;
+}
