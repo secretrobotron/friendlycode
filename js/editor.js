@@ -26,6 +26,9 @@ function updatePreview(html) {
   doc.open();
   doc.write(html);
   doc.close();
+  
+  htmlString = "<!doctype html>\n<html>\n<body>\n" + html + "\n</body>\n</html>";
+  $("#modal-source-code")[0].value = htmlString;
 }
 
 // Called whenever content of the editor area changes.

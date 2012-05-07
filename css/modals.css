@@ -94,3 +94,9 @@
   width: 340px;
   margin: auto;
 }
+
+#modal-source-code {
+  width: 100%;
+  min-height: 100px;
+  font-size: 80%;
+}
