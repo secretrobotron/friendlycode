@@ -2,14 +2,14 @@
  * Styling for webpagemaker editor modal dialogs
  */
 
-#share-dialog {
+.modal-overlay {
   z-index: 2000;
-	display: block;
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	background-color: rgba(0,0,0,0.45); 
-	height: 100%; 
+  display: block;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-color: rgba(0,0,0,0.45); 
+  height: 100%; 
   width: 100%;
 }
 
@@ -25,7 +25,7 @@
   border-radius: 10px;
   padding: 10px;
   -webkit-box-shadow: 8px 8px 5px 0px #000000;
-  box-shadow: 8px 8px 5px 0px #000000;"
+  box-shadow: 8px 8px 5px 0px #000000;
 }
 
 .close-icon {
@@ -69,10 +69,20 @@
 
 .content-box {
   width: 300px;
-  height: 100px;
+  min-height: 100px;
   border: 20px solid #79a327;
   margin: auto;
   font-size: 80%;
+  background-color: #F6F6F6;
+  margin-top: 0.5em;
+  padding: 0.5em;
+}
+
+.content-box a {
+  font-family: OpenSansBold, sans-serif;
+  color: #556;
+  text-decoration: none;
+  font-size: 140%;
 }
 
 .modal-selections {
