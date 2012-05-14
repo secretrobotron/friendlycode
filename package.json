@@ -1,0 +1,19 @@
+{
+  "name": "friendlycode",
+  "version": "0.0.1",
+  "author": "Mozilla Foundation",
+  "description": "This is a friendly HTML editor that uses slowparse and hacktionary to provide ultra-friendly real-time help to novice webmakers.",
+  "repository": {
+    "type": "git",
+    "url": "http://toolness.github.com/friendlycode/"
+  },
+  "devDependencies": {
+    "shelljs": "0.0.x",
+    "jshint": "0.6.x",
+    "requirejs": "1.0.x"
+  },
+  "license": "MIT",
+  "engine": {
+    "node": ">=0.6"
+  }
+}
