@@ -8,6 +8,8 @@
     "url": "http://toolness.github.com/friendlycode/"
   },
   "devDependencies": {
+    "express": "2.5.x",
+    "config": "0.4.x",
     "shelljs": "0.0.x",
     "jshint": "0.6.x",
     "requirejs": "1.0.x"

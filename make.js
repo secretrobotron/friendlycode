@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var JSLINT = './node_modules/jshint/bin/hint';
+var JSLINT = '"./node_modules/jshint/bin/hint"';
 
 var files = "\
 js/editor.js \
@@ -20,6 +20,5 @@ target.check = function() {
 
 target['check-lint'] = function() {
   echo('### Linting JS files');
-
   exec(JSLINT + ' ' + files);
 };
