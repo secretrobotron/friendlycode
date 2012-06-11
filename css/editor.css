@@ -309,7 +309,7 @@ img {
   display: inline-block;
   width: 30px;
 
-  background-image: url("../img/undo-grey.png");
+  background-image: url("../img/undo-grey.png"), url("../img/undo-blue.png");
   background-repeat: no-repeat;
   background-position: center center;
 }
@@ -322,7 +322,7 @@ img {
   display: inline-block;
   width: 30px;
 
-  background-image: url("../img/redo-grey.png");
+  background-image: url("../img/redo-grey.png"), url("../img/redo-blue.png");
   background-repeat: no-repeat;
   background-position: center center;
 }
@@ -360,7 +360,7 @@ img {
 
 #text-nav-item li {
   background-color: white;
-  border: 1px solid C0C0C0;
+  border: 1px solid #C0C0C0;
   border-top: none;
   padding: 10px;
 
