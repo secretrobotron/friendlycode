@@ -6,7 +6,13 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
   function LivePreview(options) {
     var self = {codeMirror: options.codeMirror},
         codeMirror = options.codeMirror,
-        iframe;
+        Slowparse = options.slowparse,
+        iframe = document.createElement("iframe"),
+        frame;
+   
+    // set up the iframe
+    options.previewArea.append(iframe);
+    frame = new Frame(iframe);
 
     codeMirror.on("reparse", function(event) {
       var isPreviewInDocument = $.contains(document.documentElement,
@@ -17,47 +23,19 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
                              "attached to the document.");
         return;
       }
+
       if (!event.error || options.ignoreErrors) {
-        var x = 0,
-            y = 0,
-            docFrag = event.document,
-            doc, wind;
-        
-        if (iframe) {
-          doc = $(iframe).contents()[0];
-          wind = doc.defaultView;
-          x = wind.pageXOffset;
-          y = wind.pageYOffset;
-          $(iframe).remove();
-        }
+      
+        // shortcut!
+        var ret = Slowparse.HTML(document, event.sourceCode);
+        if(ret.error) { return; }
 
-        iframe = document.createElement("iframe");
-        options.previewArea.append(iframe);
-        
-        // Update the preview area with the given HTML.
-        doc = $(iframe).contents()[0];
-        wind = doc.defaultView;
+        var d1 = document.createElement("div");
+        d1.innerHTML = event.sourceCode;
+        var d2 = document.createElement("div");
+        d2.innerHTML = frame.body.innerHTML;
 
-        doc.open();
-        doc.write(event.sourceCode);
-        doc.close();
-
-        // Insert a BASE TARGET tag so that links don't open in
-        // the iframe.
-        var baseTag = doc.createElement('base');
-        baseTag.setAttribute('target', '_blank');
-        doc.querySelector("head").appendChild(baseTag);
-        
-        // TODO: If the document has images that take a while to load
-        // and the previous scroll position of the document depends on
-        // their dimensions being set on load, we may need to refresh
-        // this scroll position after the document has loaded.
-        wind.scroll(x, y);
-        
-        self.trigger("refresh", {
-          window: wind,
-          documentFragment: event.document
-        });
+        diffApply(d1, d2, frame);
       }
     });
 

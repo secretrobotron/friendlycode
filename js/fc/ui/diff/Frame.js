@@ -1,0 +1,118 @@
+/**
+ * iframe mirroring object. This lets us
+ * keep a persistent reference to its content.
+ */
+(function(){
+
+  /**
+   * Constructor: bind the iframe's
+   * window, document, head and body.
+   */
+  var Frame = function(iframe) {
+    if(!Frame.instances) {
+      Frame.instances = [];
+    }
+  
+    this.window = iframe.contentWindow;
+    this.document = iframe.contentDocument;
+    this.head = this.document.head;
+    this.body = this.document.body;
+
+    Frame.instances.push(this);
+  }
+
+  /**
+   * Prototype function definitions.
+   */
+  Frame.prototype = {
+
+    /**
+     * find an element in the DOM tree
+     */
+    find: function(treeRoute) {
+      var e = this.body,
+          route = snapshot(treeRoute),
+          pos = route.splice(0,1)[0];
+      while(pos!==-1) {
+        e = e.childNodes[pos];
+        pos = route.splice(0,1)[0];
+      }
+      return e;
+    },
+
+    /**
+     * Does this frame already contain this
+     * script (in the head)?
+     */
+    containsScript: function(script) {
+      var set = snapshot(this.head.children),
+          s, last=set.length;
+      for(s=0; s<last; s++) {
+        if(equal(script,set[s])===0) {
+          this.mark(set[s]);
+          return true; }}
+      return false;
+    },
+
+    scriptBindings: [],
+
+    /**
+     * Script loading inside the frame
+     */
+    addScript: function(element) {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      // load from source?
+      if(element.getAttribute("src")) { script.src = element.getAttribute("src"); }
+      else { script.innerHTML = element.textContent; }
+      try {
+        this.head.appendChild(script);
+        this.scriptBindings.push([element, script]);
+      }
+      catch (e) { console.log("runtime error - probably bad syntax"); }
+    },
+    
+    /**
+     * remove a script from the head.
+     */
+    removeScript: function(element) {
+      var i, bindings=this.scriptBindings, last=bindings.length, binding;
+      for(i=0; i<last; i++) {
+        binding = bindings[i];
+        if(binding[0]===element) {
+          bindings.splice(i,1);
+          this.head.removeChild(binding[1]);
+          break;
+        }
+      }
+    },
+    
+    /**
+     * Reload a script's content
+     */
+    updateScript: function(element, newElement) {
+      console.log(this.scriptBindings);
+      var i, bindings=this.scriptBindings, last=bindings.length, binding;
+      for(i=0; i<last; i++) {
+        binding = bindings[i];
+        if(binding[0]===element) {
+          bindings.splice(i,1);
+          break; }}
+      this.addScript(newElement);
+    },
+
+    /**
+     * Override the DOM content with new content.
+     */
+    set: function(elementContainer) {
+      this.body.innerHTML = "";
+      var children = elementContainer.childNodes;
+      while(children.length>0) {
+        this.body.appendChild(children[0]);
+      }
+    }
+  };
+
+  // bind as a window-level thing
+  window.Frame = Frame;
+}());

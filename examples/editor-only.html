@@ -6,6 +6,13 @@
 
     <title>Editor Only</title>
     <link rel="stylesheet" href="../css/friendlycode.css">
+
+    <!-- TEST -->
+    <script src="../js/fc/ui/diff/Frame.js"></script>
+    <script src="../js/fc/ui/diff/DOM-diff.js"></script>
+    <script src="../js/fc/ui/diff/diffApply.js"></script>
+    <!-- TEST -->
+
   </head>
   <body style="margin: 0">
     <div id="editor" class="friendlycode-loading"></div>
@@ -19,7 +26,27 @@
     ], function($, Editor) {
       var editor = Editor({
         container: $("#editor"),
-        value: "<p>Just an editor widget, no publishing.</p>"
+        value: ""
++"<div>\n"
++"  <iframe style=\"width: 400px; height: 300px;\" src=\"http://www.youtube.com/embed/8uDuls5TyNE\" frameborder=\"0\" allowfullscreen></iframe>\n"
++"\n"
++"  <p>test paragraph with lols 1</p>\n"
++"  <input type=\"text\" value=\"tp1\"><br>\n"
++"\n"
++"  <div>\n"
++"    <p>test paragraph 2</p>\n"
++"    <input type=\"text\" value=\"tp2\">\n"
++"    <section style=\"border: 1px solid black; padding: 1em; margin:0; \">\n"
++"      <p>test paragraph 3</p>\n"
++"      <p>test paragraph 4</p>\n"
++"      <input type=\"text\" value=\"tp4\">\n"
++"    </section>\n"
++"  </div>\n"
++"\n"
++"  <style>\n"
++"    p { margin: 0; padding: 0; }\n"
++"  </style>\n"
++"</div>"
       });
       editor.panes.codeMirror.focus();
     });
