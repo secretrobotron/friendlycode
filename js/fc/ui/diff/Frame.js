@@ -12,11 +12,14 @@
     if(!Frame.instances) {
       Frame.instances = [];
     }
-  
+
+    // essential for IE (and possible other browsers)
+    iframe.contentEditable = true;
+
     this.window = iframe.contentWindow;
-    this.document = iframe.contentDocument;
-    this.head = this.document.head;
-    this.body = this.document.body;
+    this.document = iframe.contentWindow.document;
+    this.head = iframe.contentWindow.document.head;
+    this.body = iframe.contentWindow.document.body;
 
     Frame.instances.push(this);
   }
@@ -100,16 +103,13 @@
           break; }}
       this.addScript(newElement);
     },
-
+    
     /**
-     * Override the DOM content with new content.
+     * Run a JavaScript function, but using
+     * this.window as execution context.
      */
-    set: function(elementContainer) {
-      this.body.innerHTML = "";
-      var children = elementContainer.childNodes;
-      while(children.length>0) {
-        this.body.appendChild(children[0]);
-      }
+    runJavaScript: function(func) {
+      func(this.window);
     }
   };
 

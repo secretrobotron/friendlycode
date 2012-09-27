@@ -60,8 +60,15 @@ var DOMdiff = (function() {
           a,
           attributes = element.attributes,
           len = attributes.length;
+
+      var ignore = element.getAttribute("data-diff-ignore");
+      if(ignore) { ignore = ignore.split(/\s+/); }
+          
       for (a=0; a<len; a++) {
         attr = attributes[a];
+        if(ignore && ignore.indexOf(attr.nodeName)>-1) {
+          continue;
+        }  
         hashString += attr.nodeName+":"+attr.nodeValue;
       }
     }
@@ -78,6 +85,7 @@ var DOMdiff = (function() {
     element["hashCode"] = hash;
     return hash;
   }
+  diffObject.hashAll = hashAll;
 
 
   /**
@@ -139,11 +147,17 @@ var DOMdiff = (function() {
     if(e1.attributes && e2.attributes) {
       var attributes = e1.attributes,
           len = attributes.length,
-          a, a1, a2, attr;
+          a, a1, a2, attr,
+          ignore = e1.getAttribute("data-diff-ignore");
+
+      if(ignore) { ignore = ignore.split(/\s+/); }
       
       // attribute insertion/modification diff
       for (a=0; a<len; a++) {
         attr = attributes[a].nodeName;
+        if(ignore && ignore.indexOf(attr)>-1) {
+          continue;
+        }       
         a1 = e1.getAttribute(attr);
         a2 = e2.getAttribute(attr);
         if(a1==a2) continue;
@@ -155,6 +169,9 @@ var DOMdiff = (function() {
       len = attributes.length;
       for (a=0; a<len; a++) {
         attr = attributes[a].nodeName;
+        if(ignore && ignore.indexOf(attr)>-1) {
+          continue;
+        }       
         a1 = e1.getAttribute(attr);
         a2 = e2.getAttribute(attr);
         if(a1==a2) continue;
@@ -343,24 +360,32 @@ var DOMdiff = (function() {
 
 
     // different attributes?
-    var attrs = ["id",     // ids MUST be identical, nice and simple
-                 "style",  // this one's tricky, and I don't want to write a full CSS parser right now. FIXME: later
-                 "class",  // this one's less tricky, but still requires split/sort comparison. FIXME: later
-                 "type",
-                 "value",
-                 "href",
-                 "src",
-                 "rel",
-                 "__more__attributes__here__"],
-        a, last = attrs.length,
-        attr, a1, a2;
+    if(e1.getAttribute && e2.getAttribute) {
+      var attrs = ["id",     // ids MUST be identical, nice and simple
+                   "style",  // this one's tricky, and I don't want to write a full CSS parser right now. FIXME: later
+                   "class",  // this one's less tricky, but still requires split/sort comparison. FIXME: later
+                   "type",
+                   "value",
+                   "href",
+                   "src",
+                   "rel",
+                   "__more__attributes__here__"],
+          a, last = attrs.length,
+          attr, a1, a2,
+          ignore = e1.getAttribute("data-diff-ignore");
 
-    for(a=0; a<last; a++) {
-      attr = attrs[a];
-      a1 = e1.getAttribute(attr);
-      a2 = e2.getAttribute(attr);
-      if(a1==a2 || (!a1 && a2=="") || (!a2 && a1=="")) continue;
-      return -1;
+      if(ignore) { ignore = ignore.split(/\s+/); }
+
+      for(a=0; a<last; a++) {
+        attr = attrs[a];
+        if(ignore && ignore.indexOf(attr)>-1) {
+          continue;
+        }       
+        a1 = e1.getAttribute(attr);
+        a2 = e2.getAttribute(attr);
+        if(a1==a2 || (!a1 && a2=="") || (!a2 && a1=="")) continue;
+        return -1;
+      }
     }
 
     // nothing left to fail on - consider

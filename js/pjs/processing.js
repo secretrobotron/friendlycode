@@ -55,10 +55,12 @@
     };
   }
 
-  /* IE9+ quirks mode check - ticket #1606 */
-  if (document.documentMode >= 9 && !document.doctype) {
-    throw("The doctype directive is missing. The recommended doctype in Internet Explorer is the HTML5 doctype: <!DOCTYPE html>");
-  }
+// CUSTOM CHANGE FOR THIMBLE HACKING
+//  /* IE9+ quirks mode check - ticket #1606 */
+//  if (document.documentMode >= 9 && !document.doctype) {
+//    throw("The doctype directive is missing. The recommended doctype in Internet Explorer is the HTML5 doctype: <!DOCTYPE html>");
+//  }
+// CUSTOM CHANGE FOR THIMBLE HACKING
 
   var Float32Array = setupTypedArray("Float32Array", "WebGLFloatArray"),
       Int32Array   = setupTypedArray("Int32Array",   "WebGLIntArray"),
@@ -1979,9 +1981,8 @@
     timeAttempted: 0,
     // returns false if no fonts are pending load, or true otherwise.
     pending: function(intervallength) {
-      if (!this.initialized) {
-        this.initialize();
-      }
+      // never initialised: nothing pending
+      if (!this.initialized) { return false; }
       var element,
           computedWidthFont,
           computedWidthRef = this.getElementWidth(this.template);
@@ -2069,9 +2070,11 @@
       curElement = typeof aCanvas === "string" ? document.getElementById(aCanvas) : aCanvas;
     }
 
-    if (!(curElement instanceof HTMLCanvasElement)) {
+// CUSTOM CHANGE FOR THIMBLE HACKING
+    if (!(curElement.nodeName === "CANVAS")) {
       throw("called Processing constructor without passing canvas element reference or id.");
     }
+// CUSTOM CHANGE FOR THIMBLE HACKING
 
     function unimplemented(s) {
       Processing.debug('Unimplemented - ' + s);
@@ -20136,32 +20139,52 @@
     var startPos = code.length;
 
     function ajaxAsync(url, callback) {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          var error;
-          if (xhr.status !== 200 && xhr.status !== 0) {
-            error = "Invalid XHR status " + xhr.status;
-          } else if (xhr.responseText === "") {
-            // Give a hint when loading fails due to same-origin issues on file:/// urls
-            if ( ("withCredentials" in new XMLHttpRequest()) &&
-                 (new XMLHttpRequest()).withCredentials === false &&
-                 window.location.protocol === "file:" ) {
-              error = "XMLHttpRequest failure, possibly due to a same-origin policy violation. You can try loading this page in another browser, or load it from http://localhost using a local webserver. See the Processing.js README for a more detailed explanation of this problem and solutions.";
-            } else {
-              error = "File is empty.";
-            }
-          }
+// CUSTOM CHANGE FOR THIMBLE HACKING
+      // decide which to use
+      var xdr = (typeof XDomainRequest !== "undefined"),
+          xhr = (xdr ? new XDomainRequest() : new XMLHttpRequest());
 
-          callback(xhr.responseText, error);
-        }
-      };
       xhr.open("GET", url, true);
-      if (xhr.overrideMimeType) {
-        xhr.overrideMimeType("application/json");
+
+      // IE? then we need to use onload (really, Microsoft?)
+      if(xdr) {
+        xhr.onload = function() {
+          callback(xhr.responseText);
+        }
       }
-      xhr.setRequestHeader("If-Modified-Since", "Fri, 01 Jan 1960 00:00:00 GMT"); // no cache
+
+      // not IE means we can use onreadystatechange
+      else {
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4) {
+            var error;
+            if (xhr.status !== 200 && xhr.status !== 0) {
+              error = "Invalid XHR status " + xhr.status;
+            } else if (xhr.responseText === "") {
+              // Give a hint when loading fails due to same-origin issues on file:/// urls
+              if ( ("withCredentials" in new XMLHttpRequest()) &&
+                   (new XMLHttpRequest()).withCredentials === false &&
+                   window.location.protocol === "file:" ) {
+                error = "XMLHttpRequest failure, possibly due to a same-origin policy violation. You can try loading this page in another browser, or load it from http://localhost using a local webserver. See the Processing.js README for a more detailed explanation of this problem and solutions.";
+              } else {
+                error = "File is empty.";
+              }
+            }
+            callback(xhr.responseText, error);
+          }
+        };
+        
+        if (xhr.overrideMimeType) {
+          xhr.overrideMimeType("application/json"); // makes browsers happier
+        }
+
+        if (xhr.setRequestHeader) {
+          xhr.setRequestHeader("If-Modified-Since", "Fri, 01 Jan 1960 00:00:00 GMT"); // circumvent cache
+        }
+      }
+
       xhr.send(null);
+// CUSTOM CHANGE FOR THIMBLE HACKING
     }
 
     function loadBlock(index, filename) {
@@ -20198,11 +20221,13 @@
     }
 
     for (var i = 0; i < sourcesCount; ++i) {
-      try {
+// CUSTOM CHANGE FOR THIMBLE HACKING
+//      try {
         loadBlock(i + startPos, sources[i]);
-      } catch(e) {
-        throw "Processing.js: Unable to execute pjs sketch: " + e;
-      }
+//      } catch(e) {
+//        throw "Processing.js: Unable to execute pjs sketch: " + e;
+//      }
+// CUSTOM CHANGE FOR THIMBLE HACKING
     }
     
     if(sourcesCount === 0) {

@@ -41,9 +41,22 @@ function diffApply(d1, d2, frame)
       
       // TEST HACK - text in a script element? 
       //
-      if(parent.nodeName==="SCRIPT" && (!parent.type || parent.type==="text/javascript"))
+      if(parent.nodeName==="SCRIPT")
       {
-        frame.updateScript(e2.parentNode, e1.parentNode);
+
+        // JavaScript element: update the element mirror
+        if (!parent.getAttribute("type") || parent.getAttribute("type") === "text/javascript")
+        {
+          frame.updateScript(e2.parentNode, e1.parentNode);
+        }
+
+        // Not JavaScript: if it has an onchange, run that
+        else if(parent.getAttribute("onchange")) {
+          var fbody = parent.getAttribute("onchange");
+          var func = (new Function("return function(context) { with(context) { "+fbody+"; }}")());
+          frame.runJavaScript(func);
+        }
+
       }
       //
       // TEST HACK
@@ -145,8 +158,8 @@ function diffApply(d1, d2, frame)
           log += "    left["+entry[0]+"] ("+serialise(entry[1])+")\n";
 
           var element = frame.find(iroute);
-          element.insertBefore(entry[1], element.childNodes[entry[0]]);
-
+          if(entry[0] >= element.childNodes.length) { element.appendChild(entry[1]); }
+          else { element.insertBefore(entry[1], element.childNodes[entry[0]]); }
           
           // TEST HACK - add scripts to frame head, so it'll actually
           //             do something

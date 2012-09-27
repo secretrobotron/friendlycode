@@ -19,6 +19,29 @@
 
     <script src="../js/require-config.js"></script>
     <script src="../js/require.min.js"></script>
+    <script type="text/html">
+<div>
+  <iframe style="width: 400px; height: 300px;" src="http://www.youtube.com/embed/8uDuls5TyNE" frameborder="0" allowfullscreen></iframe>
+
+  <p>test paragraph with lols 1</p>
+  <input type="text" value="tp1"><br>
+
+  <div>
+    <p>test paragraph 2</p>
+    <input type="text" value="tp2">
+    <section style="border: 1px solid black; padding: 1em; margin:0; ">
+      <p>test paragraph 3</p>
+      <p>test paragraph 4</p>
+      <input type="text" value="tp4">
+    </section>
+  </div>
+
+  <style>
+    p { margin: 0; padding: 0; }
+  </style>
+</div>
+    </script>
+
     <script>
     require([
       "jquery",
@@ -26,27 +49,7 @@
     ], function($, Editor) {
       var editor = Editor({
         container: $("#editor"),
-        value: ""
-+"<div>\n"
-+"  <iframe style=\"width: 400px; height: 300px;\" src=\"http://www.youtube.com/embed/8uDuls5TyNE\" frameborder=\"0\" allowfullscreen></iframe>\n"
-+"\n"
-+"  <p>test paragraph with lols 1</p>\n"
-+"  <input type=\"text\" value=\"tp1\"><br>\n"
-+"\n"
-+"  <div>\n"
-+"    <p>test paragraph 2</p>\n"
-+"    <input type=\"text\" value=\"tp2\">\n"
-+"    <section style=\"border: 1px solid black; padding: 1em; margin:0; \">\n"
-+"      <p>test paragraph 3</p>\n"
-+"      <p>test paragraph 4</p>\n"
-+"      <input type=\"text\" value=\"tp4\">\n"
-+"    </section>\n"
-+"  </div>\n"
-+"\n"
-+"  <style>\n"
-+"    p { margin: 0; padding: 0; }\n"
-+"  </style>\n"
-+"</div>"
+        value:$("*[type='text/html']").text()
       });
       editor.panes.codeMirror.focus();
     });

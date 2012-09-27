@@ -3090,8 +3090,8 @@ static class SoundManager {
   static void init(PApplet _sketch) { 
     sketch = _sketch;
     owners = new HashMap<Object,AudioPlayer>();
-    mute_overlay = sketch.loadImage("js/pjs/mute.gif");
-    unmute_overlay = sketch.loadImage("js/pjs/unmute.gif");
+    mute_overlay = sketch.loadImage("../js/pjs/mute.gif");
+    unmute_overlay = sketch.loadImage("../js/pjs/unmute.gif");
     volume_overlay = (muted ? unmute_overlay : mute_overlay);
     minim = new Minim(sketch); 
     reset();
