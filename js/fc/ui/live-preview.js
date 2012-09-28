@@ -38,13 +38,13 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
           var log = diffApply(d1, d2, frame);
         }
 
-        // Firefox and IE9 need the following "kickstart"
         else {
           var sourceCode = event.sourceCode;
           var loadFunction = function() {
             frame = new Frame(iframe);
             frame.document.removeEventListener("DOMContentLoaded", loadFunction, false);
             iframe.contentWindow.document.body.innerHTML = sourceCode;
+            frame.scanForScripts();
           };
 
           $(iframe).ready(loadFunction);

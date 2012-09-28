@@ -53,8 +53,8 @@ define(function(require) {
         parachute.refresh();
       }
       editor.panes.codeMirror.reparse();
-      editor.panes.codeMirror.focus();
       editor.panes.codeMirror.refresh();
+      editor.panes.codeMirror.focus();
       ready.resolve();
     }
 

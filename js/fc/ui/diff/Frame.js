@@ -105,6 +105,23 @@
     },
     
     /**
+     * Scan for javascript <script> elements,
+     * and add each to the <head> for execution.
+     */
+    scanForScripts: function() {
+      var _ = this.document.getElementsByTagName("script"),
+          elements = snapshot(_),
+          e, last = elements.length, element, type;
+      for(e=0; e<last; e++) {
+        element = elements[e];
+        type = element.getAttribute("type");
+        if(!type || type.toLowerCase() === "text/javascript") {
+          this.addScript(element);
+        }       
+      }
+    },
+    
+    /**
      * Run a JavaScript function, but using
      * this.window as execution context.
      */

@@ -163,9 +163,12 @@ function diffApply(d1, d2, frame)
           
           // TEST HACK - add scripts to frame head, so it'll actually
           //             do something
-          if(entry[1].nodeName==="SCRIPT" && (!entry[1].type || entry[1].type==="text/javascript"))
+          if(entry[1].nodeName==="SCRIPT")
           {
-            frame.addScript(entry[1]);
+            if(!entry[1].type || entry[1].type==="text/javascript")
+            {
+              frame.addScript(entry[1]);
+            }
           }
           //
           // TEST HACK
