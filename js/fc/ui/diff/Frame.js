@@ -74,7 +74,7 @@
       }
       catch (e) { console.log("runtime error - probably bad syntax"); }
     },
-    
+
     /**
      * remove a script from the head.
      */
@@ -89,12 +89,11 @@
         }
       }
     },
-    
+
     /**
      * Reload a script's content
      */
     updateScript: function(element, newElement) {
-      console.log(this.scriptBindings);
       var i, bindings=this.scriptBindings, last=bindings.length, binding;
       for(i=0; i<last; i++) {
         binding = bindings[i];
@@ -103,7 +102,7 @@
           break; }}
       this.addScript(newElement);
     },
-    
+
     /**
      * Scan for javascript <script> elements,
      * and add each to the <head> for execution.
@@ -117,10 +116,10 @@
         type = element.getAttribute("type");
         if(!type || type.toLowerCase() === "text/javascript") {
           this.addScript(element);
-        }       
+        }
       }
     },
-    
+
     /**
      * Run a JavaScript function, but using
      * this.window as execution context.

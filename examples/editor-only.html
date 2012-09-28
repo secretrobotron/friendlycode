@@ -25,10 +25,13 @@
 
 ‹p›let's hack it.‹/p›
 
-‹!--
-  values!
---›
-‹script type="text/processing" data-target="gameCanvas" onchange="update()"›
+‹script type="text/processing" data-target="gameCanvas" onchange="update(fragment)"›
+
+  /**
+   * In this section we can change some of the values
+   * that are used throughout our game.
+   */
+
   // this are the dimensions of our game
   int screenWidth = 512;
   int screenHeight = 432;
@@ -41,37 +44,47 @@
 
   // and this is how much friction the ground has
   float DAMPENING = 0.75;
+
 ‹/script›
 
-‹!--
-  demo code
---›
-‹script type="text/processing" data-target="gameCanvas" onchange="update()"›
-void initialize()
-{
-  frameRate(30);
-  addScreen("level", new MarioLevel(width, height));  
-}
-‹/script›
 
-‹!--
-  An "empty" level, with a single layer in it.
---›
-‹script type="text/processing" data-target="gameCanvas" onchange="update()"›
-class MarioLevel extends Level
-{
-  MarioLevel(float levelWidth, float levelHeight)
+‹script type="text/processing" data-target="gameCanvas" onchange="update(fragment)"›
+
+  /**
+   * When the game library starts everything up, the first
+   * function it calls is the initialize() function.
+   */
+  void initialize()
   {
-    super(levelWidth, levelHeight);
-    addLevelLayer("layer", new MarioLayer(this));
+    frameRate(30);
+    addScreen("level", new MarioLevel(width, height));
   }
-}
+
 ‹/script›
 
-‹!--
-  An "empty" layer, with a blue background, and a "boundary" that acts as ground.
---›
-‹script type="text/processing" data-target="gameCanvas" onchange="update()"›
+
+‹script type="text/processing" data-target="gameCanvas" onchange="update(fragment)"›
+
+  /**
+   * An "empty" level, with a single layer in it.
+   */
+  class MarioLevel extends Level
+  {
+    MarioLevel(float levelWidth, float levelHeight)
+    {
+      super(levelWidth, levelHeight);
+      addLevelLayer("layer", new MarioLayer(this));
+    }
+  }
+
+‹/script›
+
+
+‹script type="text/processing" data-target="gameCanvas" onchange="update(fragment)"›
+
+  /**
+   * An "empty" layer, with a blue background, and a "boundary" that acts as ground.
+   */
   class MarioLayer extends LevelLayer
   {
     MarioLayer(Level owner)
@@ -91,9 +104,15 @@ class MarioLevel extends Level
       addPlayer(mario);
     }
   }
+
 ‹/script›
 
-‹script type="text/processing" data-target="gameCanvas" onchange="update()"›
+
+‹script type="text/processing" data-target="gameCanvas" onchange="update(fragment)"›
+
+  /**
+   * Our glorious hero, Mario!
+   */
   class Mario extends Player
   {
     Mario(float x, float y)
@@ -111,11 +130,11 @@ class MarioLevel extends Level
 
     void setupStates()
     {
-      addState(new State("idle", "../js/pjs/graphics/mario/small/Standing-mario.gif"));
+      addState(new State("idle",    "../js/pjs/graphics/mario/small/Standing-mario.gif"));
       addState(new State("running", "../js/pjs/graphics/mario/small/Running-mario.gif",1,4));
       addState(new State("jumping", "../js/pjs/graphics/mario/small/Jumping-mario.gif"));
-      addState(new State("dead", "../js/pjs/graphics/mario/small/Dead-mario.gif",1,2));
-      setCurrentState("idle");    
+      addState(new State("dead",    "../js/pjs/graphics/mario/small/Dead-mario.gif",1,2));
+      setCurrentState("idle");
     }
 
     void handleInput()
@@ -125,11 +144,11 @@ class MarioLevel extends Level
       if (isKeyDown('W')) { addImpulse(0,-10); }
     }
   }
+
 ‹/script›
 
-‹!--
-  This is the HTML element we're loading our game in.
---›
+
+‹!-- This is the HTML element we're loading our game in. --›
 ‹canvas id="gameCanvas"
         data-processing-sources="../js/pjs/preloads.pde ../js/pjs/codebase.pde"
         data-diff-ignore="style tabindex width height"›‹/canvas›
@@ -139,39 +158,20 @@ class MarioLevel extends Level
 
 ‹!--
 
-  ========================= LIBRARY CODE =========================
-
-    the following scripts set up the game library loading for us.
-    We don't actually want to change these, since they're needed
-    to even do anything game-related in this tutorial =)
-
-  ========================= LIBRARY CODE ========================= 
+  ========================== LIBRARY CODE ============================
+  =                                                                  =
+  =   The following scripts set up the game library loading for us.  =
+  =   We don't actually want to change these, since they're needed   =
+  =   to even do anything game-related in this tutorial =)           =
+  =                                                                  =
+  =========================== LIBRARY CODE ===========================
 
 --›
 
-
-<!-- audio library -->
-‹script src="../js/pjs/minim.js"›‹/script›
-
-<!-- Processing.js -->
-‹script src="../js/pjs/processing.js"›‹/script›
-
-<!-- Processing.js start-up handler -->
-‹script›
-(function setupReload() {
-  if(typeof Processing !== "undefined") { Processing.reload(); }
-  else { setTimeout(setupReload, 250); }}());
-‹/script›
-
-<!-- Processing.js sketch fragment updates -->
-‹script›
-  function update() {
-    console.log("update() called as onchange for a text/processing script element.");
-    Processing.reload();
-  }
-‹/script›
-    
-    </script>
+‹script src="../js/pjs/minim.js"›      /* audio library */  ‹/script›
+‹script src="../js/pjs/processing.js"› /* Processing.js */  ‹/script›
+‹script src="../js/pjs/updating.js"›   /*  Pjs updates  */  ‹/script›
+</script>
 
     <script>
     require([

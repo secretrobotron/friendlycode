@@ -38,8 +38,8 @@ function diffApply(d1, d2, frame)
       var element = frame.find(iroute),
           parent = element.parentNode;
       parent.replaceChild(e1,element);
-      
-      // TEST HACK - text in a script element? 
+
+      // TEST HACK - text in a script element?
       //
       if(parent.nodeName==="SCRIPT")
       {
@@ -52,8 +52,9 @@ function diffApply(d1, d2, frame)
 
         // Not JavaScript: if it has an onchange, run that
         else if(parent.getAttribute("onchange")) {
-          var fbody = parent.getAttribute("onchange");
-          var func = (new Function("return function(context) { with(context) { "+fbody+"; }}")());
+          var call = parent.getAttribute("onchange"),
+              fbody = "function(context) { with(context) { "+call+"; }}";
+          var func = (new Function("fragment", "return "+fbody+";")(parent));
           frame.runJavaScript(func);
         }
 
@@ -77,7 +78,7 @@ function diffApply(d1, d2, frame)
         last = outerDiff.length;
         for(pos=0; pos<last; pos++) {
           entry = outerDiff[pos];
-          
+
           if(entry[0]==="nodeName") {
             log += "    tag name difference. left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
 
@@ -92,7 +93,7 @@ function diffApply(d1, d2, frame)
             // and replace!
             element.parentNode.replaceChild(newElement, element);
           }
-          
+
           else {
             log += "    attribute: '"+entry[0]+"', left: '"+entry[1]+"', right: '"+entry[2]+"'\n";
 
@@ -127,13 +128,13 @@ function diffApply(d1, d2, frame)
           //
           if(entry[1].nodeName==="SCRIPT" && (!entry[1].type || entry[1].type==="text/javascript"))
           {
-            frame.removeScript(element); 
+            frame.removeScript(element);
           }
           //
           // TEST HACK
 
           // update the relocations, because by removing X,
-          // any relocation of the type left[a]->right[b] 
+          // any relocation of the type left[a]->right[b]
           // where b is X or higher, should now be
           // left[a] -> right[b-1] -- Note that the following
           // code is POC, and still needs cleaning up.
@@ -160,7 +161,7 @@ function diffApply(d1, d2, frame)
           var element = frame.find(iroute);
           if(entry[0] >= element.childNodes.length) { element.appendChild(entry[1]); }
           else { element.insertBefore(entry[1], element.childNodes[entry[0]]); }
-          
+
           // TEST HACK - add scripts to frame head, so it'll actually
           //             do something
           if(entry[1].nodeName==="SCRIPT")
@@ -175,7 +176,7 @@ function diffApply(d1, d2, frame)
 
 
           // update the relocations, because by inserting X,
-          // any relocation of the type left[a]->right[b] 
+          // any relocation of the type left[a]->right[b]
           // where b is X or higher, should now be
           // left[a] -> right[b+1] -- Note that the following
           // code is POC, and still needs cleaning up.
