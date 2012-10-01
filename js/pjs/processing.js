@@ -473,7 +473,7 @@
     function ArrayList(a) {
       var array;
 
-      if (a instanceof ArrayList) {
+      if (a && a.toArray) {
         array = a.toArray();
       } else {
         array = [];
@@ -2071,7 +2071,7 @@
     }
 
 // CUSTOM CHANGE FOR THIMBLE HACKING
-    if (!(curElement.nodeName === "CANVAS")) {
+    if (curElement.nodeName !== "CANVAS" && !(curElement instanceof HTMLCanvasElement)) {
       throw("called Processing constructor without passing canvas element reference or id.");
     }
 // CUSTOM CHANGE FOR THIMBLE HACKING
@@ -19361,10 +19361,13 @@
       var res = [];
       statements = preStatementsTransform(statements);
       var lastIndex = 0, m, space;
+      
+
       // m contains the matches from the nextStatement regexp, null if there are no matches.
       // nextStatement.exec starts searching at nextStatement.lastIndex.
       while((m = nextStatement.exec(statements)) !== null) {
-        if(m[1] !== undef) { // catch, for ...
+        // catch, for ...
+        if(m[1] !== undef) {
           var i = statements.lastIndexOf('"B', nextStatement.lastIndex);
           var statementsPrefix = statements.substring(lastIndex, i);
           if(m[1] === "for") {
@@ -19377,10 +19380,16 @@
             res.push(new AstPrefixStatement(m[1], transformExpression(atoms[m[2]]),
               { prefix: statementsPrefix }) );
           }
-        } else if(m[3] !== undef) { // do, else, ...
+        }
+
+        // do, else, ...
+        else if(m[3] !== undef) {
             res.push(new AstPrefixStatement(m[3], undef,
               { prefix: statements.substring(lastIndex, nextStatement.lastIndex) }) );
-        } else if(m[4] !== undef) { // block, class and methods
+        }
+        
+        // block, class and methods
+        else if(m[4] !== undef) { 
           space = statements.substring(lastIndex, nextStatement.lastIndex - m[4].length);
           if(trim(space).length !== 0) { continue; } // avoiding new type[] {} construct
           res.push(space);
@@ -19394,17 +19403,37 @@
           } else {
             res.push(transformStatementsBlock(atoms[atomIndex]));
           }
-        } else if(m[6] !== undef) { // switch case
+        }
+        // switch case
+        else if(m[6] !== undef) {
           res.push(new AstSwitchCase(transformExpression(trim(m[7]))));
-        } else if(m[8] !== undef) { // label
+        }
+        // label
+        else if(m[8] !== undef) {
           space = statements.substring(lastIndex, nextStatement.lastIndex - m[8].length);
           if(trim(space).length !== 0) { continue; } // avoiding ?: construct
           res.push(new AstLabel(statements.substring(lastIndex, nextStatement.lastIndex)) );
-        } else { // semicolon
+        }
+        // semicolon
+        else {
           var statement = trimSpaces(statements.substring(lastIndex, nextStatement.lastIndex - 1));
           res.push(statement.left);
-          res.push(transformStatement(statement.middle));
+          var transformed = transformStatement(statement.middle);
+          res.push(transformed);
           res.push(statement.right + ";");
+// CUSTOM CHANGE FOR THIMBLE HACKING
+          var definitions = transformed.definitions,
+              inRoot = !!transformClass,
+              d, definition, name, binding;
+          if(inRoot && definitions) {
+            for (d = definitions.length - 1; d >= 0; d--) {
+              definition = definitions[d];
+              name = definition.name;
+              binding = "$p." + name + " = " + name + ";";
+              res.push(binding);
+            }
+          }
+// CUSTOM CHANGE FOR THIMBLE HACKING
         }
         lastIndex = nextStatement.lastIndex;
       }
@@ -20021,13 +20050,13 @@
     };
 
     /* Optional Sketch event hooks:
-     *   onLoad - parsing/preloading is done, before sketch starts
-     *   onSetup - setup() has been called, before first draw()
-     *   onPause - noLoop() has been called, pausing draw loop
-     *   onLoop - loop() has been called, resuming draw loop
+     *   onLoad   - parsing/preloading is done, before sketch starts
+     *   onSetup  - setup() has been called, before first draw()
+     *   onPause  - noLoop() has been called, pausing draw loop
+     *   onLoop   - loop() has been called, resuming draw loop
      *   onFrameStart - draw() loop about to begin
      *   onFrameEnd - draw() loop finished
-     *   onExit - exit() done being called
+     *   onExit   - exit() done being called
      */
     this.onLoad = nop;
     this.onSetup = nop;
@@ -20092,9 +20121,18 @@
       if(typeof this.attachFunction === "function") {
         this.attachFunction(processing);
       } else if(this.sourceCode) {
-        var func = ((new Function("return (" + this.sourceCode + ");"))());
-        func(processing);
-        this.attachFunction = func;
+        try {
+          var func = ((new Function("return (" + this.sourceCode + ");"))());
+          func(processing);
+          if(processing.onAttach) {
+            processing.onAttach();
+          }
+        } catch(e) {
+          if(processing.onError) {
+            processing.onError("attach");
+          }
+          throw e;
+        }
       } else {
         throw "Unable to attach sketch to the processing instance";
       }
@@ -20130,7 +20168,7 @@
    * @param {CANVAS} canvas The html canvas element to bind to
    * @param {String[]} source The array of files that must be loaded
    */
-  var loadSketchFromSources = function(canvas, sources, code) {
+  var loadSketchFromSources = function(canvas, sources, code, codeBinding) {
     var errors = [],
         sourcesCount = sources.length,
         loaded = 0;
@@ -20173,7 +20211,7 @@
             callback(xhr.responseText, error);
           }
         };
-        
+
         if (xhr.overrideMimeType) {
           xhr.overrideMimeType("application/json"); // makes browsers happier
         }
@@ -20197,7 +20235,10 @@
         if (loaded === sourcesCount) {
           if (errors.length === 0) {
             try {
-              return new Processing(canvas, code.join("\n"));
+              var p = new Processing(canvas, code.join("\n"));
+              codeBinding.setSketch(p);
+              p.externals.codeBinding = codeBinding;
+              return p;
             } catch(e) {
               throw "Processing.js: Unable to execute pjs sketch: " + e;
             }
@@ -20229,9 +20270,44 @@
 //      }
 // CUSTOM CHANGE FOR THIMBLE HACKING
     }
-    
+
     if(sourcesCount === 0) {
       return new Processing(canvas, code.join("\n"));
+    }
+  };
+
+  /**
+   * CodeBinding objects represent the information
+   * required to create a new Processing instance.
+   */
+  var CodeBinding = function(canvas, undef) {
+    if(canvas) {
+      this.canvas = canvas;
+    }
+    this.p = undef;
+    this.code = [];
+    this.fragments = [];
+    this.fileNames = [];
+  };
+  Processing.CodeBinding = CodeBinding;
+
+  CodeBinding.prototype = {
+    setCanvas: function(canvas) {
+      this.canvas = canvas;
+    },
+    addFragment: function(fragment) {
+      this.fragments.push(fragment);
+      this.code.push(fragment.textContent);
+      var alias = this;
+      fragment.onchange = function() {
+        if (alias.p) {
+          alias.p.updateFromFragment(fragment);
+        }
+      }
+    },
+    addFile: function(fileName) {
+      this.fileNames.push(fileName);
+      // code added during loadBlock() in loadSketchFromSources()
     }
   };
 
@@ -20259,6 +20335,7 @@
         fileName,
         tmpId = 1234;
 
+    // scan for script (fragments)
     for (s = 0, last = scripts.length; s < last; s++) {
       var script = scripts[s];
 
@@ -20270,19 +20347,18 @@
       type = (type ? type.toLowerCase() : type);
 
       if (type && (type === "text/processing" || type === "application/processing")) {
+        canvas = undef;
         target = script.getAttribute("data-target");
         if (!target) {
-          // Deprecated "processing-target" attribute. Will be removed sometime in the future.
           target = script.getAttribute("data-processing-target");
         }
-        canvas = undef;
 
         // if we have a target canvas, use that
         if (target) {
           canvas = document.getElementById(target);
           // set up code binding for this canvas
           if (!codeBindings[target]) {
-            codeBindings[target] = { canvas: canvas, code: [], fileNames: [] };
+            codeBindings[target] = new CodeBinding(canvas);
           }
         }
 
@@ -20303,24 +20379,29 @@
             }
 
             if (!codeBindings[canvas.id]) {
-              codeBindings[canvas.id] = { canvas: canvas, code: [], fileNames: [] };
+              codeBindings[canvas.id] = new CodeBinding(canvas);
             }
           }
         }
 
+        // TODO: If there is no canvas, spawn one.
+        if (!canvas) {
+          // ...code goes here...
+        }
+
         // was this script element tied to a canvas?
-        if (canvas) {
+        if(canvas) {
           // do we need to load a fragment from file?
           fileName = script.getAttribute("src");
           if (fileName) {
-            codeBindings[canvas.id].fileNames.push(fileName);
+            codeBindings[canvas.id].addFile(fileName);
           }
 
           // if not, we load a fragment from textContent (or text, for IE)
           else {
             source =  script.textContent || script.text;
             if (source.trim() !== "") {
-              codeBindings[canvas.id].code.push(source);
+              codeBindings[canvas.id].addFragment(script);
             }
           }
         }
@@ -20340,7 +20421,7 @@
         // remove empty entries
         for (j = 0; j < fileNames.length; ) {
           if (fileNames[j]) {
-            codeBindings[canvas[s].id].fileNames.push(fileNames[j++]);
+            codeBindings[canvas[s].id].addFile(fileNames[j++]);
           } else {
             fileNames.splice(j, 1);
           }
@@ -20348,11 +20429,12 @@
       }
     }
 
-    // finally, run through all codeBindings
+    // Finally, run through all codeBindings.
+    // Each binding represents one sketch.
     for (s in codeBindings) {
       if (!Object.hasOwnProperty(codeBindings, s)) {
         codeBinding = codeBindings[s];
-        loadSketchFromSources(codeBinding.canvas, codeBinding.fileNames, codeBinding.code);
+        loadSketchFromSources(codeBinding.canvas, codeBinding.fileNames, codeBinding.code, codeBinding);
       }
     }
   };

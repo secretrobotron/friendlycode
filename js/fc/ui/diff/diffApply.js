@@ -50,12 +50,17 @@ function diffApply(d1, d2, frame)
           frame.updateScript(e2.parentNode, e1.parentNode);
         }
 
-        // Not JavaScript: if it has an onchange, run that
-        else if(parent.getAttribute("onchange")) {
+        // Not JavaScript: if it has an onchange attribute, run its code:
+        else if (parent.getAttribute("onchange")) {
           var call = parent.getAttribute("onchange"),
               fbody = "function(context) { with(context) { "+call+"; }}";
           var func = (new Function("fragment", "return "+fbody+";")(parent));
           frame.runJavaScript(func);
+        }
+
+        // or, if it has an onchange handler, wrap-call that:
+        else if (parent.onchange) {
+          frame.runJavaScript(parent.onchange);          
         }
 
       }
