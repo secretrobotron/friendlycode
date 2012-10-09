@@ -20,158 +20,76 @@
     <script src="../js/require-config.js"></script>
     <script src="../js/require.min.js"></script>
     <script type="text/html">
+‹h1›Pong!‹/h1›
 
-‹h1›Our own mario game!‹/h1›
+‹p›Pong is the original computer game. Two paddles, a "ball" (even though it's actually
+  a rectangle), and pure, unadulterated physics. ‹i›let's hack it.‹/i›‹/p›
 
-‹p›let's hack it.‹/p›
+‹section id="game"›
+  ‹div id="world" tabindex="0"›
+    ‹div class="top wall"›‹/div›
+    ‹div class="bottom wall"›‹/div›
+    ‹div class="paddle left"›‹/div›
+    ‹div class="paddle right"›‹/div›
+    ‹div class="ball" data-density="0" data-friction="0" data-bounciness="2"›‹/div› 
+  ‹/div›
 
-‹script type="text/processing" data-target="gameCanvas"›
+  ‹button onclick="start()"›Start the game‹/button›
+  ‹button onclick="pause()"›Pause the game‹/button›
+  
+  ‹p›Controls: left player uses w/s to move, right player uses up/down arrows.‹/p›
+‹/section›
 
-  /**
-   * In this section we can change some of the values
-   * that are used throughout our game.
-   */
-
-  // this are the dimensions of our game
-  int screenWidth = 512;
-  int screenHeight = 432;
-
-  // this is "gravity"
-  float DOWN_FORCE = 2;
-
-  // this is the fall accelleration
-  float ACCELERATION = 1.3;
-
-  // and this is how much friction the ground has
-  float DAMPENING = 0.75;
-
-‹/script›
-
-
-‹script type="text/processing" data-target="gameCanvas"›
-
-  /**
-   * When the game library starts everything up, the first
-   * function it calls is the initialize() function.
-   */
-  void initialize()
-  {
-    frameRate(30);
-    addScreen("level", new MarioLevel(width, height));
+‹!-- STYLING --›
+‹style›
+  #game {
+    text-align: center;
   }
 
-‹/script›
-
-
-‹script type="text/processing" data-target="gameCanvas"›
-
-  /**
-   * An "empty" level, with a single layer in it.
-   */
-  class MarioLevel extends Level
-  {
-    MarioLevel(float levelWidth, float levelHeight)
-    {
-      super(levelWidth, levelHeight);
-      addLevelLayer("layer", new MarioLayer(this));
-    }
+  #world {
+    position: relative;
+    height: 300px;
+    width:  500px;
+    background-color: black;
+    vertical-align: middle;
+    margin: auto;
   }
-
-‹/script›
-
-
-‹script type="text/processing" data-target="gameCanvas"›
-
-  /**
-   * An "empty" layer, with a blue background, and a "boundary" that acts as ground.
-   */
-  class MarioLayer extends LevelLayer
-  {
-    MarioLayer(Level owner)
-    {
-      super(owner);
-      setBackgroundColor(color(0, 100, 190));
-      // walls: ceiling
-      addBoundary(new Boundary(width,48,0,48));
-      // walls: left wall
-      addBoundary(new Boundary(1,0,1,height));
-      // walls: floor
-      addBoundary(new Boundary(0,height-48,width,height-48));
-      // walls: right wall
-      addBoundary(new Boundary(width-1,height,width-1,0));
-      showBoundaries = true;
-      Mario mario = new Mario(width/2, height/2);
-      addPlayer(mario);
-    }
+  
+  .paddle {
+    position: absolute;
+    display: inline-block;
+    width: 10px;
+    height: 100px;
+    background-color: lightgreen;
+    top: 40%;
   }
+  
+  .paddle.left { left: 10px; }
+  .paddle.right { right: 10px; }
 
-‹/script›
-
-
-‹script type="text/processing" data-target="gameCanvas"›
-
-  /**
-   * Our glorious hero, Mario!
-   */
-  class Mario extends Player
-  {
-    Mario(float x, float y)
-    {
-      super("Mario");
-      setupStates();
-      handleKey('W');
-      handleKey('A');
-      handleKey('D');
-      setPosition(x,y);
-      setForces(0,DOWN_FORCE);
-      setAcceleration(0,ACCELERATION);
-      setImpulseCoefficients(DAMPENING,DAMPENING);
-    }
-
-    void setupStates()
-    {
-      addState(new State("idle",    "../js/pjs/graphics/mario/small/Standing-mario.gif"));
-      addState(new State("running", "../js/pjs/graphics/mario/small/Running-mario.gif",1,4));
-      addState(new State("jumping", "../js/pjs/graphics/mario/small/Jumping-mario.gif"));
-      addState(new State("dead",    "../js/pjs/graphics/mario/small/Dead-mario.gif",1,2));
-      setCurrentState("idle");
-    }
-
-    void handleInput()
-    {
-      if (isKeyDown('A')) { addImpulse(-2, 0); }
-      if (isKeyDown('D')) { addImpulse(2, 0); }
-      if (isKeyDown('W')) { addImpulse(0,-10); }
-    }
+  .ball {
+    position: absolute;
+    background-color: lightgreen;
+    width: 10px;
+    height: 10px;
+    top: 50%;
+    left: 250px;
   }
+  
+  .wall {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background-color: yellow;
+  }
+  
+  .wall.top { top: 0; }
+  .wall.bottom { bottom: 0; }
+‹/style›
 
-‹/script›
-
-
-‹!-- This is the HTML element we're loading our game in. --›
-‹canvas id="gameCanvas"
-        data-processing-sources="../js/pjs/preloads.pde ../js/pjs/codebase.pde"
-        data-diff-ignore="style tabindex width height"›‹/canvas›
-
-‹p›This is a very simple mario game, and we're going to remix it!‹/p›
-
-
-‹!--
-
-  ========================== LIBRARY CODE ============================
-  =                                                                  =
-  =   The following scripts set up the game library loading for us.  =
-  =   We don't actually want to change these, since they're needed   =
-  =   to even do anything game-related in this tutorial =)           =
-  =                                                                  =
-  =========================== LIBRARY CODE ===========================
-
---›
-
-‹script src="../js/pjs/minim.js"›      /* audio library */ ‹/script›
-‹script src="../js/pjs/processing.js"› /* Processing.js */ ‹/script›
-‹script src="../js/pjs/CodeBinding.js"›/* Pjs extesion  */ ‹/script›
-‹script src="../js/pjs/updating.js"›   /*  Pjs updates  */ ‹/script›
+‹!-- SCRIPTS --›
+‹script src="../js/Box2dWeb-2.1.a.3.js"›‹/script›
+‹script src="../js/physics.js"›‹/script›
 </script>
 
     <script>
