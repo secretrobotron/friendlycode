@@ -1,3 +1,19 @@
+/**
+
+  This is a very simple Pong game, intended to be hackable.
+
+  It may not be the most exciting and complex game, but it
+  can act as a first step in taking something and making it
+  your own, instead of settling.
+
+  TODO:
+  
+  1) monitor DOM manipulation of the world container, so that new divs get turned into new game elements.
+  2) monitor style changes of the elements in the world container (attr and css?)
+  3) make world things draggable?
+        
+**/
+
 var keys = [false, false, false, false];
 
 function keyPressed(e) {
@@ -28,18 +44,20 @@ document.querySelector("#world").onkeyup = keyReleased;
 
 // ================= DRAW LOOP REQUEST
 window.requestAnimFrame = (function(){
-  return  window.requestAnimationFrame       || 
-          window.webkitRequestAnimationFrame || 
-          window.mozRequestAnimationFrame    || 
-          window.oRequestAnimationFrame      || 
-          window.msRequestAnimationFrame     || 
-          function(/* function */ callback, /* DOMElement */ element){
-            window.setTimeout(callback, 1000 / 60);
-          };
+  return window.requestAnimationFrame || 
+    window.webkitRequestAnimationFrame || 
+    window.mozRequestAnimationFrame    || 
+    window.oRequestAnimationFrame      || 
+    window.msRequestAnimationFrame     || 
+    function(/* function */ callback, /* DOMElement */ element){
+      window.setTimeout(callback, 1000 / 60);
+    };
 })();
 
+// ================= HANDLES
 var ball, leftPaddle, rightPaddle;
   
+// ================= TRY TO RUN BOX2D CODE:
 (function tryPhysics() {
   if (typeof Box2D === "undefined") {
     setTimeout(tryPhysics, 200); 
