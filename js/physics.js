@@ -137,7 +137,7 @@ var ball, leftPaddle, rightPaddle;
 
     fixDef.density = element.getAttribute("data-density") || 0;
     fixDef.friction = element.getAttribute("data-friction") || 0;
-    fixDef.restitution = element.getAttribute("data-bounciness") || 20;
+    fixDef.restitution = element.getAttribute("data-bounciness") || 1;
 
     bodyDef.position.x = bbox.left - pbbox.left + bbox.width/2;
     bodyDef.position.y = bbox.top - pbbox.top + bbox.height/2;
@@ -174,33 +174,6 @@ var ball, leftPaddle, rightPaddle;
     var gravity = new b2Vec2(0, 0);
     var doSleep = true;
     var world = new b2World(worldAABB, gravity, doSleep);
-
-    // ground
-    var SCALE = 30;
-    var canvas = {
-      width: worldbox.width,
-      height: worldbox.height
-    }
-     
-    var fixDef = new b2FixtureDef;
-    fixDef.density = 1.0;
-    fixDef.friction = 0.5;
-    fixDef.restitution = 0.2;
-   
-    var bodyDef = new b2BodyDef;
-   
-    //create ground
-    bodyDef.type = b2Body.b2_staticBody;
-    
-    // positions the center of the object (not upper left!)
-    bodyDef.position.x = canvas.width / 2 / SCALE;
-    bodyDef.position.y = canvas.height / SCALE;
-    
-    fixDef.shape = new b2PolygonShape;
-    
-    // half width, half height. eg actual height here is 1 unit
-    fixDef.shape.SetAsBox((600 / SCALE) / 2, (10/SCALE) / 2);
-    world.CreateBody(bodyDef).CreateFixture(fixDef);
   }
 
   var movePaddles = function() {
