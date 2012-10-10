@@ -41,7 +41,6 @@ function keyReleased(e) {
 document.querySelector("#world").onkeydown = keyPressed;
 document.querySelector("#world").onkeyup = keyReleased;
 
-
 // ================= DRAW LOOP REQUEST
 window.requestAnimFrame = (function(){
   return window.requestAnimationFrame || 
@@ -54,9 +53,21 @@ window.requestAnimFrame = (function(){
     };
 })();
 
+// ================= WIN HANDLING
+
+var wins = function(selector) {
+  var element = document.querySelector(selector);
+  var value = parseInt(element.innerHTML);
+  element.innerHTML = value+1;
+};
+
+var leftWins = function()  { wins(".scores .left");  };
+var rightWins = function() { wins(".scores .right"); };
+
 // ================= HANDLES
-var ball, leftPaddle, rightPaddle;
-  
+var balls = [], leftPaddle, rightPaddle, worldBBox;
+ 
+
 // ================= TRY TO RUN BOX2D CODE:
 (function tryPhysics() {
   if (typeof Box2D === "undefined") {
@@ -98,6 +109,9 @@ var ball, leftPaddle, rightPaddle;
 
     bodyDef.position.x = bbox.left - pbbox.left + bbox.width/2;
     bodyDef.position.y = bbox.top - pbbox.top + bbox.height/2;
+    
+    this.start_x = bodyDef.position.x;
+    this.start_y = bodyDef.position.y;
 
     this.b2 = world.CreateBody(bodyDef);
     this.b2.CreateFixture(fixDef);
@@ -113,6 +127,7 @@ var ball, leftPaddle, rightPaddle;
   Bar.prototype = {
     el: null,
     b2: null,
+    start_x: 0, start_y: 0,
     width: 0, height: 0,
     center: function() { return this.b2.GetWorldCenter(); },
     update: function() {
@@ -159,6 +174,10 @@ var ball, leftPaddle, rightPaddle;
 
     bodyDef.position.x = bbox.left - pbbox.left + bbox.width/2;
     bodyDef.position.y = bbox.top - pbbox.top + bbox.height/2;
+
+    this.start_x = bodyDef.position.x;
+    this.start_y = bodyDef.position.y;
+
 
     this.b2 = world.CreateBody(bodyDef);
     this.b2.CreateFixture(fixDef);
@@ -208,7 +227,19 @@ var ball, leftPaddle, rightPaddle;
      world.Step(1/60,10,10);
      world.ClearForces();
      movePaddles();
-     ball.update();
+     balls.forEach(function(ball) {
+       ball.update();
+       var pos = ball.b2.GetPosition(),
+           w = ball.width/2,
+           h = ball.height/2;
+       if (pos.x+w < 0 || pos.x-w > worldBBox.width) {
+         if(pos.x+w<0) { rightWins(); }
+         else { leftWins(); }
+         pos.x = ball.start_x;
+         pos.y = ball.start_y;
+         ball.b2.SetPosition(pos);
+       }
+     });
      leftPaddle.update();
      rightPaddle.update();
      if(!paused) {
@@ -225,7 +256,7 @@ var ball, leftPaddle, rightPaddle;
   // start the game
   window.start = function start() {
     var worldParent = document.querySelector("#world");
-    var worldBBox = worldParent.getBoundingClientRect();
+    worldBBox = worldParent.getBoundingClientRect();
     setupWorldBox(worldBBox);
     
     // top/bottom walls
@@ -237,8 +268,13 @@ var ball, leftPaddle, rightPaddle;
     rightPaddle = new Bar(worldParent, document.querySelector(".paddle.right"), world);
 
     // the playing ball
-    ball = new Ball(worldParent, document.querySelector(".ball"), world);
-    ball.applyImpulse(-200,150);
+    var ballElements = document.querySelectorAll(".ball"), len = ballElements.length, i, ballElement;
+    for(i=0; i<len; i++) {
+      ballElement = ballElements[i];
+      ball = new Ball(worldParent, ballElement, world);
+      ball.applyImpulse(-200,150);
+      balls.push(ball);
+    }
 
     // focus on the game and start the loop
     worldParent.focus();

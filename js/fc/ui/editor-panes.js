@@ -24,7 +24,7 @@ define(function(require) {
         previewArea = $('<div class="preview-holder"></div>').appendTo(div),
         helpArea = $('<div class="help hidden"></div>').appendTo(div),
         errorArea =  $('<div class="error hidden"></div>').appendTo(div);
-    
+  
     var codeMirror = self.codeMirror = ParsingCodeMirror(sourceCode[0], {
       mode: "text/html",
       theme: "jsbin",
