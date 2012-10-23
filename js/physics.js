@@ -38,6 +38,8 @@ function keyReleased(e) {
   }
 }
 
+
+// world event listening
 document.querySelector("#world").onkeydown = keyPressed;
 document.querySelector("#world").onkeyup = keyReleased;
 
@@ -70,6 +72,7 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
 
 // ================= TRY TO RUN BOX2D CODE:
 (function tryPhysics() {
+
   if (typeof Box2D === "undefined") {
     setTimeout(tryPhysics, 200); 
     return;
@@ -115,6 +118,9 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
 
     this.b2 = world.CreateBody(bodyDef);
     this.b2.CreateFixture(fixDef);
+    
+    // mark as reflected
+    element.box2dObject = this;
 
     // Contact listening
     var listener = new Box2D.Dynamics.b2ContactListener;
@@ -178,10 +184,13 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
     this.start_x = bodyDef.position.x;
     this.start_y = bodyDef.position.y;
 
-
     this.b2 = world.CreateBody(bodyDef);
     this.b2.CreateFixture(fixDef);
 
+    // mark as reflected
+    element.box2dObject = this; 
+
+    // add change monitoring
     element.onchange = (function(ball) {
       return function() {
         // rebind attributes
@@ -193,8 +202,9 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
         fixture.SetFriction(element.getAttribute("data-friction"));
         fixture.SetRestitution(element.getAttribute("data-bounciness"));
       };
-    }(this));    
+    }(this));
   };
+
   Ball.prototype = Bar.prototype;
   Ball.prototype.constructor = Ball;
 
@@ -276,10 +286,54 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
       balls.push(ball);
     }
 
+    /**
+     * What do we do when a DOM node is inserted into the world?
+     */
+    worldParent.addEventListener("DOMNodeInserted", function(evt) {
+      var el = evt.srcElement;
+      if(el.nodeType===1 && typeof el.box2dObject === "undefined") {
+        // what should we do with this thing?
+        var classes = el.getAttribute("class");
+
+        // new ball object?
+        if(!!classes.match(new RegExp("\\b" + 'ball' + "\\b",""))) {
+          var ball = new Ball(worldParent, el, world);
+          ball.applyImpulse(Math.random() > 0.5 ? 200 : -200, Math.random() > 0.5 ? 150 : -150);
+          balls.push(ball);
+        }
+        
+        // new paddle/wall?
+        // TODO: ...CODE GOES HERE...
+
+      }
+    }, false);
+
+    /**
+     * What do we do when a DOM node is removed from the world?
+     */
+    worldParent.addEventListener("DOMNodeRemoved", function(evt) {
+      var el = evt.srcElement;
+      if(el.nodeType===1 && typeof el.box2dObject !== "undefined") {
+        // what should we do with this thing?
+        var classes = el.getAttribute("class");
+
+        // Ball object?
+        if(!!classes.match(new RegExp("\\b" + 'ball' + "\\b",""))) {
+          var ball = el.box2dObject;
+          // destroy ball
+          world.DestroyBody(ball.b2);
+        }
+        
+        // Paddle/Wall?
+        // TODO: ...CODE GOES HERE...
+
+      }
+    }, false);
+
     // focus on the game and start the loop
     worldParent.focus();
     drawFrame();
-  }
-  
+  };
+
 }());
 

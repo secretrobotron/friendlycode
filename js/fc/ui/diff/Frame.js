@@ -51,9 +51,9 @@
       var set = snapshot(this.head.children),
           s, last=set.length;
       for(s=0; s<last; s++) {
-        if(equal(script,set[s])===0) {
-          this.mark(set[s]);
-          return true; }}
+        if(script.src === set[s].src) { return true; }
+        if(script.innerHTML.trim() !== "" && script.innerHTML === set[s].innerHTML) { return true; }
+      }
       return false;
     },
 
@@ -63,10 +63,15 @@
      * Script loading inside the frame
      */
     addScript: function(element) {
+      if(this.containsScript(element)) return;
+
       var script = document.createElement("script");
       script.type = "text/javascript";
       // load from source?
-      if(element.getAttribute("src")) { script.src = element.getAttribute("src"); }
+      if(element.getAttribute("src")) {
+        var src = element.getAttribute("src");
+        script.src = src
+      }
       else { script.innerHTML = element.textContent; }
       try {
         this.head.appendChild(script);
@@ -83,8 +88,8 @@
       for(i=0; i<last; i++) {
         binding = bindings[i];
         if(binding[0]===element) {
-          bindings.splice(i,1);
           this.head.removeChild(binding[1]);
+          bindings.splice(i,1);
           break;
         }
       }
