@@ -160,6 +160,9 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
       }
       // modify as circle
       else if(shape.SetRadius) {
+        // FIXME: right now we're treating balls as circles,
+        //        although, really, we want to treat them as
+        //        high-n polygons.
         shape.SetRadius((w+h)/4);
         this.el.style.left = (c.x-w/2) + "px";
         this.el.style.top = (c.y-h/2) + "px";        
@@ -293,10 +296,15 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
   window.pause = function pause() {
     paused = !paused;
     if(!paused) { requestAnimFrame(drawFrame); }
+    
+    document.querySelector("button[onclick='pause()']").innerHTML = (paused ? "Resume" : "Pause") + " the game";
   }
 
   // start the game
   window.start = function start() {
+    // disable start button
+    document.querySelector("button[onclick='start()']").disabled = true;
+  
     var worldParent = document.querySelector("#world");
     worldBBox = worldParent.getBoundingClientRect();
     setupWorldBox(worldBBox);
