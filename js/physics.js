@@ -140,6 +140,34 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
       var c = this.center();
       this.el.style.left = (c.x-this.width/2) + "px";
       this.el.style.top = (c.y-this.height/2) + "px";
+      
+      // make sure our dimensions are still correct, based on CSS
+      var bbox = this.el.getBoundingClientRect(),
+          w = parseInt(bbox.width),
+          h = parseInt(bbox.height);
+      if((w|0)!=(this.width|0) || (h|0)!=(this.height|0)) {
+        var fixdef = this.b2.GetFixtureList(),
+            shape = fixdef.GetShape();
+        this.updateShape(shape, c, w, h);
+      }
+    },
+    updateShape: function(shape, c, w, h) {
+      // modify as box
+      if(shape.SetAsBox) {
+        shape.SetAsBox(w/2, h/2);
+        this.el.style.left = (c.x-w/2) + "px";
+        this.el.style.top = (c.y-h/2) + "px";
+      }
+      // modify as circle
+      else if(shape.SetRadius) {
+        shape.SetRadius((w+h)/4);
+        this.el.style.left = (c.x-w/2) + "px";
+        this.el.style.top = (c.y-h/2) + "px";        
+      }
+      // universal binds
+      this.b2.SetPosition(c);
+      this.width = w;
+      this.height = h;
     },
     applyImpulse: function(x,y) {
       var c = this.center();
@@ -236,7 +264,11 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
   var drawFrame = function() {
      world.Step(1/60,10,10);
      world.ClearForces();
+     
+     // allow the paddles to be moved based on keyinput
      movePaddles();
+
+     // check ball-in-world validity
      balls.forEach(function(ball) {
        ball.update();
        var pos = ball.b2.GetPosition(),
