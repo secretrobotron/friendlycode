@@ -38,12 +38,38 @@ function keyReleased(e) {
   }
 }
 
-
 // world event listening
 document.querySelector("#world").onkeydown = keyPressed;
 document.querySelector("#world").onkeyup = keyReleased;
 
+
+// ================= Very simple API for onbounce="..." handling
+
+
+var OnBounceAPI = {
+
+  // set an HTML element's css class to something (reverting after [expiry] seconds)
+  setClass: function(selector, className, expiry) {
+    var element = document.querySelector(selector);
+    if(!element) return;
+    element.classList.add(className);
+    if(expiry) {
+      setTimeout(function() { element.classList.remove(className); }, expiry);
+    }
+  },
+
+  // play a sound from an <audio> element
+  audio: new Audio(),
+  play: function(selector) {
+    var element = document.querySelector(selector);
+    if(!element) return;
+    this.audio.src = element.src;
+    this.audio.play();
+  }
+}
+
 // ================= DRAW LOOP REQUEST
+
 window.requestAnimFrame = (function(){
   return window.requestAnimationFrame || 
     window.webkitRequestAnimationFrame || 
@@ -67,10 +93,12 @@ var leftWins = function()  { wins(".scores .left");  };
 var rightWins = function() { wins(".scores .right"); };
 
 // ================= HANDLES
+
 var balls = [], leftPaddle, rightPaddle, worldBBox;
  
 
 // ================= TRY TO RUN BOX2D CODE:
+
 (function tryPhysics() {
 
   if (typeof Box2D === "undefined") {
@@ -78,19 +106,22 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
     return;
   }
 
-  // ================= SHORTCUT ALIASSES
+// ================= SHORTCUT ALIASSES
+
   var b2Vec2 = Box2D.Common.Math.b2Vec2,
       b2BodyDef = Box2D.Dynamics.b2BodyDef,
       b2Body = Box2D.Dynamics.b2Body,
       b2FixtureDef = Box2D.Dynamics.b2FixtureDef,
       b2Fixture = Box2D.Dynamics.b2Fixture,
       b2World = Box2D.Dynamics.b2World,
+      b2ContactListener = Box2D.Dynamics.b2ContactListener,
       b2MassData = Box2D.Collision.Shapes.b2MassData,
       b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
       b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
       b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 
-  // ================= BOX2D CODE FOR BARS
+// ================= BOX2D CODE FOR BARS
+
   var Bar = function(gamediv, element, world) {
     var pbbox = gamediv.getBoundingClientRect();
     var bbox = element.getBoundingClientRect();
@@ -121,14 +152,7 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
     
     // mark as reflected
     element.box2dObject = this;
-
-    // Contact listening
-    var listener = new Box2D.Dynamics.b2ContactListener;
-    listener.BeginContact = function(contact) { }
-    listener.EndContact = function(contact) {}
-    listener.PreSolve = function(contact, oldManifold) {}
-    listener.PostSolve = function(contact, impulse) {}
-    world.SetContactListener(listener);
+    this.b2.SetUserData({element: element});    
   };
   Bar.prototype = {
     el: null,
@@ -189,7 +213,8 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
   };
   Bar.prototype.constructor = Bar;
 
-  // ================= BOX2D CODE FOR THE BALL
+// ================= BOX2D CODE FOR THE BALL
+
   var Ball = function(gamediv, element, world) {
     var pbbox = gamediv.getBoundingClientRect();
     var bbox = element.getBoundingClientRect();
@@ -207,7 +232,7 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
 
     fixDef.density = element.getAttribute("data-density") || 0;
     fixDef.friction = element.getAttribute("data-friction") || 0;
-    fixDef.restitution = element.getAttribute("data-bounciness") || 1;
+    fixDef.restitution = element.getAttribute("data-elasticity") || element.getAttribute("data-bounciness") || 1;
 
     bodyDef.position.x = bbox.left - pbbox.left + bbox.width/2;
     bodyDef.position.y = bbox.top - pbbox.top + bbox.height/2;
@@ -234,25 +259,61 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
         fixture.SetRestitution(element.getAttribute("data-bounciness"));
       };
     }(this));
+
+    /**
+     * add bounce monitoring
+     */
+    if(element.hasAttribute("onbounce")) {
+      var bounceCode = element.getAttribute("onbounce");
+      // form the list of function calls
+      var split = bounceCode.split(")"),
+          code = [];
+      split.forEach(function(s) {
+        if(!s.trim()) return;
+        code.push("OnBounceAPI." + s.trim() + ");");
+      });
+      // create a new function that runs through the calls,
+      // and is triggered as an onbounce (called by box2d contact listener)
+      element.onbounce = new Function(code.join("\n"));
+    }
+
+    this.b2.SetUserData({element: element});    
   };
 
   Ball.prototype = Bar.prototype;
   Ball.prototype.constructor = Ball;
 
+// ================= CONTACT LISTENING
 
-  // ================= BOX2D MAIN CODE
+  function createCollisionListener() {
+    var listener = new b2ContactListener();
+    listener.BeginContact = function(contact) {
+      var bar = contact.GetFixtureA().GetBody().GetUserData().element;
+      var ball = contact.GetFixtureB().GetBody().GetUserData().element;
+       bar.classList.add("colliding");
+       ball.classList.add("colliding");
+    };
+    listener.EndContact = function(contact) {
+      var bar = contact.GetFixtureA().GetBody().GetUserData().element;
+      var ball = contact.GetFixtureB().GetBody().GetUserData().element;
+      bar.classList.remove("colliding");
+      ball.classList.remove("colliding");
+    };
+    listener.PreSolve = function(contact, oldManifold) {};
+    listener.PostSolve = function(contact, impulse) {
+      var bar = contact.GetFixtureA().GetBody().GetUserData().element;
+      var ball = contact.GetFixtureB().GetBody().GetUserData().element;
+      if(ball.onbounce) {
+        ball.onbounce(impulse);
+      }
+    };   
+    return listener;
+  };
+
+// ================= BOX2D MAIN CODE
+
   var gravity = new b2Vec2(0,0);
   var world = new b2World(gravity, true);
-
-  // setup the world box
-  var setupWorldBox = function(worldbox) {
-    var worldAABB = new Box2D.Collision.b2AABB;
-    worldAABB.lowerBound.Set(0,0);
-    worldAABB.upperBound.Set(worldbox.width, worldbox.height);
-    var gravity = new b2Vec2(0, 0);
-    var doSleep = true;
-    var world = new b2World(worldAABB, gravity, doSleep);
-  }
 
   var movePaddles = function() {
    var speed = 2; // pixels per event trigger
@@ -307,7 +368,7 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
   
     var worldParent = document.querySelector("#world");
     worldBBox = worldParent.getBoundingClientRect();
-    setupWorldBox(worldBBox);
+    world.SetContactListener(createCollisionListener());
     
     // top/bottom walls
     new Bar(worldParent, document.querySelector(".top.wall"), world);
