@@ -47,6 +47,13 @@ document.querySelector("#world").onkeyup = keyReleased;
 
 
 var OnBounceAPI = {
+  destroy: function(selector) {
+    var element = document.querySelector(selector);
+    if(!element) return
+    var box2d = element.box2dObject;
+    scheduleDestroy(box2d);
+    element.classList.add("destroyed");
+  },
 
   // set an HTML element's css class to something (reverting after [expiry] seconds)
   setClass: function(selector, className, expiry) {
@@ -94,7 +101,7 @@ var rightWins = function() { wins(".scores .right"); };
 
 // ================= HANDLES
 
-var balls = [], leftPaddle, rightPaddle, worldBBox;
+var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
  
 
 // ================= TRY TO RUN BOX2D CODE:
@@ -123,6 +130,8 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
 // ================= BOX2D CODE FOR BARS
 
   var Bar = function(gamediv, element, world) {
+    this.world = world;
+
     var pbbox = gamediv.getBoundingClientRect();
     var bbox = element.getBoundingClientRect();
 
@@ -152,9 +161,10 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
     
     // mark as reflected
     element.box2dObject = this;
-    this.b2.SetUserData({element: element});    
+    this.b2.SetUserData({element: element, object: this});    
   };
   Bar.prototype = {
+    world: null,
     el: null,
     b2: null,
     start_x: 0, start_y: 0,
@@ -209,6 +219,32 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
       v.x += x;
       v.y += y;
       this.b2.SetPosition(v);
+    },
+    onbounce: function() {
+      var element = this.el;
+      if(element.hasAttribute("onbounce")) {
+        var bounceCode = element.getAttribute("onbounce");
+        // form the list of function calls
+        var split = bounceCode.split(")"),
+            code = [];
+        split.forEach(function(s) {
+          if(!s.trim()) return;
+          code.push("OnBounceAPI." + s.trim() + ");");
+        });
+        // create a new function that runs through the calls,
+        // and is triggered as an onbounce (called by box2d contact listener)
+        try {
+          var fn = new Function(code.join("\n"));
+          try { fn(); }
+          catch(runtimeError) {
+            // runtime error in code: throw it up
+            throw(runtimeError);
+          }
+        } catch(syntaxRrror) {
+          // syntax error in Function - don't run it.
+          console.log("syntax error");
+        }
+      }
     }
   };
   Bar.prototype.constructor = Bar;
@@ -216,6 +252,8 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
 // ================= BOX2D CODE FOR THE BALL
 
   var Ball = function(gamediv, element, world) {
+    this.world = world;
+
     var pbbox = gamediv.getBoundingClientRect();
     var bbox = element.getBoundingClientRect();
 
@@ -260,24 +298,7 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
       };
     }(this));
 
-    /**
-     * add bounce monitoring
-     */
-    if(element.hasAttribute("onbounce")) {
-      var bounceCode = element.getAttribute("onbounce");
-      // form the list of function calls
-      var split = bounceCode.split(")"),
-          code = [];
-      split.forEach(function(s) {
-        if(!s.trim()) return;
-        code.push("OnBounceAPI." + s.trim() + ");");
-      });
-      // create a new function that runs through the calls,
-      // and is triggered as an onbounce (called by box2d contact listener)
-      element.onbounce = new Function(code.join("\n"));
-    }
-
-    this.b2.SetUserData({element: element});    
+    this.b2.SetUserData({element: element, object: this});    
   };
 
   Ball.prototype = Bar.prototype;
@@ -301,11 +322,10 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
     };
     listener.PreSolve = function(contact, oldManifold) {};
     listener.PostSolve = function(contact, impulse) {
-      var bar = contact.GetFixtureA().GetBody().GetUserData().element;
-      var ball = contact.GetFixtureB().GetBody().GetUserData().element;
-      if(ball.onbounce) {
-        ball.onbounce(impulse);
-      }
+      var o1 = contact.GetFixtureA().GetBody().GetUserData().object;
+      var o2 = contact.GetFixtureB().GetBody().GetUserData().object;
+      o1.onbounce();
+      o2.onbounce();
     };   
     return listener;
   };
@@ -314,6 +334,7 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
 
   var gravity = new b2Vec2(0,0);
   var world = new b2World(gravity, true);
+  var scheduledRemoval = [];
 
   var movePaddles = function() {
    var speed = 2; // pixels per event trigger
@@ -323,34 +344,52 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
    if(keys[3]) rightPaddle.moveBy(0,speed);
   }
 
+  // schedule an object for destruction
+  window.scheduleDestroy = function(body) {
+    scheduledRemoval.push(body);
+  }
+
   // draw loop
   var paused = false;
   var drawFrame = function() {
-     world.Step(1/60,10,10);
-     world.ClearForces();
-     
-     // allow the paddles to be moved based on keyinput
-     movePaddles();
 
-     // check ball-in-world validity
-     balls.forEach(function(ball) {
-       ball.update();
-       var pos = ball.b2.GetPosition(),
-           w = ball.width/2,
-           h = ball.height/2;
-       if (pos.x+w < 0 || pos.x-w > worldBBox.width) {
-         if(pos.x+w<0) { rightWins(); }
-         else { leftWins(); }
-         pos.x = ball.start_x;
-         pos.y = ball.start_y;
-         ball.b2.SetPosition(pos);
-       }
-     });
-     leftPaddle.update();
-     rightPaddle.update();
-     if(!paused) {
-       requestAnimFrame(drawFrame);
-     }
+    // cleanup bodies that should have been removed during collision
+    scheduledRemoval.forEach(function(body) {
+      world.DestroyBody(body.b2);
+      var pos = bars.indexOf(body);
+      bars.splice(pos,1);
+    });
+    scheduledRemoval = [];
+
+    // next step.
+    world.Step(1/60,10,10);
+    world.ClearForces();
+     
+    // allow the paddles to be moved based on keyinput
+    movePaddles();
+
+    // check ball-in-world validity
+    balls.forEach(function(ball) {
+      ball.update();
+      var pos = ball.b2.GetPosition(),
+          w = ball.width/2,
+          h = ball.height/2;
+      if (pos.x+w < 0 || pos.x-w > worldBBox.width) {
+        if(pos.x+w<0) { rightWins(); }
+        else { leftWins(); }
+        pos.x = ball.start_x;
+        pos.y = ball.start_y;
+        ball.b2.SetPosition(pos);
+      }
+    });
+     
+    bars.forEach(function(bar) {
+      bar.update();
+    });
+
+    if(!paused) {
+      requestAnimFrame(drawFrame);
+    }
   };
   
   // pause/resume the game
@@ -370,22 +409,52 @@ var balls = [], leftPaddle, rightPaddle, worldBBox;
     worldBBox = worldParent.getBoundingClientRect();
     world.SetContactListener(createCollisionListener());
     
-    // top/bottom walls
-    new Bar(worldParent, document.querySelector(".top.wall"), world);
-    new Bar(worldParent, document.querySelector(".bottom.wall"), world);
+    // walls
+    (function(){
+      var wallElements = document.querySelectorAll(".wall"), len = wallElements.length, i, wallElement;
+      for(i=0; i<len; i++) {
+        wallElement = wallElements[i];
+        wall = new Bar(worldParent, wallElement, world);
+        bars.push(wall);
+      }
+    }());
 
     // paddles
-    leftPaddle = new Bar(worldParent, document.querySelector(".paddle.left"), world);
-    rightPaddle = new Bar(worldParent, document.querySelector(".paddle.right"), world);
+    (function(){
+      var lp = document.querySelector(".paddle.left");
+      if(lp) {
+        leftPaddle = new Bar(worldParent, lp, world);
+        bars.push(leftPaddle);
+      }
+      var rp = document.querySelector(".paddle.right");
+      if(rp) {
+        rightPaddle = new Bar(worldParent, rp, world);
+        bars.push(rightPaddle);
+      }
+    }());
 
-    // the playing ball
-    var ballElements = document.querySelectorAll(".ball"), len = ballElements.length, i, ballElement;
-    for(i=0; i<len; i++) {
-      ballElement = ballElements[i];
-      ball = new Ball(worldParent, ballElement, world);
-      ball.applyImpulse(-200,150);
-      balls.push(ball);
-    }
+
+    // user defined "bars"
+    (function(){
+      var barElements = document.querySelectorAll(".bar"), len = barElements.length, i, barElement;
+      for(i=0; i<len; i++) {
+        barElement = barElements[i];
+        bar = new Bar(worldParent, barElement, world);
+        bars.push(bar);
+      }
+    }());
+
+    // the playing ball(s)
+    (function(){
+      var ballElements = document.querySelectorAll(".ball"), len = ballElements.length, i, ballElement;
+      for(i=0; i<len; i++) {
+        ballElement = ballElements[i];
+        ball = new Ball(worldParent, ballElement, world);
+        ball.applyImpulse(-200,150);
+        balls.push(ball);
+      }
+    }());
+
 
     /**
      * What do we do when a DOM node is inserted into the world?
