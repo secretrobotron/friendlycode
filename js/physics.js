@@ -52,7 +52,7 @@ var OnBounceAPI = {
     if(!element) return
     var box2d = element.box2dObject;
     scheduleDestroy(box2d);
-    element.classList.add("destroyed");
+    element.setAttribute("data-destroyed",true);
   },
 
   // set an HTML element's css class to something (reverting after [expiry] seconds)

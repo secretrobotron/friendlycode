@@ -61,7 +61,14 @@ var DOMdiff = (function() {
           attributes = element.attributes,
           len = attributes.length;
 
-      var ignore = element.getAttribute("data-diff-ignore");
+      var ignore = element.getAttribute("data-diff-ignore"),
+          el = element;
+      while(el.parentNode) {
+        el = el.parentNode;
+        if (el.getAttribute("data-diff-ignore-inherit")) {
+          ignore += " " + el.getAttribute("data-diff-ignore-inherit");
+        }
+      }
       if(ignore) { ignore = ignore.split(/\s+/); }
           
       for (a=0; a<len; a++) {
@@ -150,6 +157,13 @@ var DOMdiff = (function() {
           a, a1, a2, attr,
           ignore = e1.getAttribute("data-diff-ignore");
 
+      var el = e1;
+      while(el.parentNode) {
+        el = el.parentNode;
+        if (el.getAttribute("data-diff-ignore-inherit")) {
+          ignore += " " + el.getAttribute("data-diff-ignore-inherit");
+        }
+      }
       if(ignore) { ignore = ignore.split(/\s+/); }
       
       // attribute insertion/modification diff
@@ -374,6 +388,13 @@ var DOMdiff = (function() {
           attr, a1, a2,
           ignore = e1.getAttribute("data-diff-ignore");
 
+      var el = e1;
+      while(el.parentNode) {
+        el = el.parentNode;
+        if (el.getAttribute("data-diff-ignore-inherit")) {
+          ignore += " " + el.getAttribute("data-diff-ignore-inherit");
+        }
+      }
       if(ignore) { ignore = ignore.split(/\s+/); }
 
       for(a=0; a<last; a++) {
