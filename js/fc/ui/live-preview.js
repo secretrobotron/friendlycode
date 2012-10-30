@@ -10,7 +10,15 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
         
     // triggers whenever the cursor or text selection is manipulated
     codeMirror.on("cursor-activity", function(event) {
-      //console.log(event);
+      console.log(event);
+      /*
+        var p = event.MONKEY, <select element(s)>
+            parseInfo = p.parseInfo,
+            start = parseInfo.openTag.start,
+            end = parseInfo.closeTag.end,
+            text = codeMirror.getRange(codeMirror.posFromIndex(start),codeMirror.posFromIndex(end));
+            
+      */
     });
 
     // triggers whenever the user types (or removes) text in codemirror
@@ -26,8 +34,11 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
       if (!event.error || options.ignoreErrors) {
         var x = 0,
             y = 0,
-            docFrag = event.document,
+            docFrag = event.document, // DOM document
             doc, wind;
+        
+        console.log("BREAK");
+     
         
         if (iframe) {
           doc = $(iframe).contents()[0];
