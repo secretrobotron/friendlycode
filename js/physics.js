@@ -492,6 +492,7 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
           var ball = el.box2dObject;
           // destroy ball
           world.DestroyBody(ball.b2);
+          balls.splice(balls.indexOf(ball),1);
         }
         
         // Paddle/Wall?
