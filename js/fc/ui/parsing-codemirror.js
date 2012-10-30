@@ -25,7 +25,10 @@ define([
 
     // Called whenever the user moves their cursor in the editor area.
     function onCursorActivity() {
-      codeMirror.trigger("cursor-activity");
+      codeMirror.trigger("cursor-activity", {
+        start: codeMirror.getCursor(true),
+        end: codeMirror.getCursor(false)
+      });
     }
 
     // The number of milliseconds to wait before re-parsing the editor

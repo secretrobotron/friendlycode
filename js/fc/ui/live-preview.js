@@ -7,7 +7,13 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
     var self = {codeMirror: options.codeMirror, title: ""},
         codeMirror = options.codeMirror,
         iframe;
+        
+    // triggers whenever the cursor or text selection is manipulated
+    codeMirror.on("cursor-activity", function(event) {
+      //console.log(event);
+    });
 
+    // triggers whenever the user types (or removes) text in codemirror
     codeMirror.on("reparse", function(event) {
       var isPreviewInDocument = $.contains(document.documentElement,
                                            options.previewArea[0]);
