@@ -7,9 +7,13 @@
     <!-- GAME TEST -->
     <script src="../js/fc/ui/diff/Frame.js"></script>
     <script src="../js/fc/ui/diff/DOM-diff.js"></script>
+    <script>
+      // ensure style="..." changes are completely ignores when building diffs
+      DOMdiff.setGlobalIgnore(["style"]);
+    </script>
     <script src="../js/fc/ui/diff/diffApply.js"></script>
     <!-- GAME TEST -->
-    
+
     <title>Pong - The original entertainment super star console hit</title>
     <link rel="stylesheet" href="../css/friendlycode.css">
   </head>
@@ -22,7 +26,7 @@
     <script>
     // Alternate publisher implementation that publishes to a hackpub
     // endpoint. For more information, see:
-    // 
+    //
     //   https://github.com/hackasaurus/hackpub
     //
     // Note also that the Amazon S3 bucket hackpub publishes to must
@@ -35,7 +39,7 @@
     //       <AllowedMethod>GET</AllowedMethod>
     //     </CORSRule>
     //   </CORSConfiguration>
-     
+
     define("hackpub", ["jquery"], function($) {
       return function Hackpub(options) {
         return {
@@ -89,16 +93,16 @@
     ‹div class="bottom wall"›‹/div›
     ‹div class="paddle left"›‹/div›
     ‹div class="paddle right"›‹/div›
-    ‹div class="ball" data-density="0" data-friction="0" data-bounciness="1"›‹/div› 
+    ‹div class="ball" data-density="0" data-friction="0" data-bounciness="1"›‹/div›
   ‹/div›
-  
+
   ‹div class="scores"›
     ‹span class="left"›0‹/span› : ‹span class="right"›0‹/span›
   ‹/div›
 
   ‹button onclick="start()"›Start the game‹/button›
   ‹button onclick="pause()"›Pause the game‹/button›
-  
+
   ‹p›Controls: left player uses w/s to move, right player uses up/down arrows.‹/p›
 ‹/section›
 
@@ -117,7 +121,7 @@
     margin: auto;
     overflow: hidden;
   }
-  
+
   .paddle {
     position: absolute;
     display: inline-block;
@@ -126,7 +130,7 @@
     background-color: green;
     top: 40%;
   }
-  
+
   .paddle.left { left: 10px; }
   .paddle.right { right: 10px; }
 
@@ -138,17 +142,17 @@
     top: 50%;
     left: 250px;
   }
-  
+
   .wall {
     position: absolute;
     width: 100%;
     height: 5px;
     background-color: green;
   }
-  
+
   .wall.top { top: 0; }
   .wall.bottom { bottom: 0; }
-  
+
   .scores {
     width: 500px;
     margin: auto;
@@ -164,7 +168,7 @@
 ‹script src="../js/Box2dWeb-2.1.a.3.js"›‹/script›
 ‹script src="../js/physics.js"›‹/script›
 </script>
-    
+
 
     <script>
     require([

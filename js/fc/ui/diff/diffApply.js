@@ -3,9 +3,6 @@
  */
 function diffApply(d1, d2, frame)
 {
-  // ensure style="..." changes are completely ignores when building diffs
-  DOMdiff.setGlobalIgnore(["style"]);
-
   // find diffs. Then apply them.
   var routes = DOMdiff.getDiff(d1,d2), route, iroute,
       d, lastRoute = routes.length, v,
@@ -67,7 +64,7 @@ function diffApply(d1, d2, frame)
 
         // or, if it has an onchange handler, wrap-call that:
         else if (parent.onchange) {
-          frame.runJavaScript(parent.onchange);          
+          frame.runJavaScript(parent.onchange);
         }
 
       }
@@ -112,7 +109,7 @@ function diffApply(d1, d2, frame)
             var element = frame.find(iroute);
             if(entry[1]==null) { element.removeAttribute(entry[0]); }
             else { element.setAttribute(entry[0], entry[1]); }
-            
+
             if (element.onchange) {
               frame.runJavaScript(element.onchange);
             }
