@@ -472,9 +472,14 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
           balls.push(ball);
         }
         
-        // new paddle/wall?
-        // TODO: ...CODE GOES HERE...
-
+        // new wall/bar/paddle object?
+        var isWallObject = !!classes.match(new RegExp("\\b" + 'wall' + "\\b","")),
+            isBarObject = !!classes.match(new RegExp("\\b" + 'bar' + "\\b","")),
+            isPaddleObject = !!classes.match(new RegExp("\\b" + 'paddle' + "\\b",""));
+        if(isWallObject || isBarObject || isPaddleObject) {
+          var bar = new Bar(worldParent, el, world);
+          bars.push(bar);
+        }
       }
     }, false);
 
@@ -484,20 +489,26 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
     worldParent.addEventListener("DOMNodeRemoved", function(evt) {
       var el = evt.srcElement;
       if(el.nodeType===1 && typeof el.box2dObject !== "undefined") {
-        // what should we do with this thing?
+        // step 1: destroy the box2d physics object
+        var box2dthing = el.box2dObject;
+        world.DestroyBody(box2dthing.b2);
+
+        // step 2: remove the reference to the wrapper object
+        //         from the appropriate list of game objects.
         var classes = el.getAttribute("class");
 
-        // Ball object?
+        // Ball object? Remove its reference from the balls list.
         if(!!classes.match(new RegExp("\\b" + 'ball' + "\\b",""))) {
-          var ball = el.box2dObject;
-          // destroy ball
-          world.DestroyBody(ball.b2);
-          balls.splice(balls.indexOf(ball),1);
+          balls.splice(balls.indexOf(box2dthing),1);
         }
-        
-        // Paddle/Wall?
-        // TODO: ...CODE GOES HERE...
 
+        // Wall/bar/paddle? Remove its reference from the bars list.
+        var isWallObject = !!classes.match(new RegExp("\\b" + 'wall' + "\\b","")),
+            isBarObject = !!classes.match(new RegExp("\\b" + 'bar' + "\\b","")),
+            isPaddleObject = !!classes.match(new RegExp("\\b" + 'paddle' + "\\b",""));
+        if(isWallObject || isBarObject || isPaddleObject) {
+          bars.splice(bars.indexOf(box2dthing),1);
+        }
       }
     }, false);
 
