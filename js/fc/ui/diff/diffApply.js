@@ -1,5 +1,12 @@
+/**
+ * find and apply source code -> frame DOM diff
+ */
 function diffApply(d1, d2, frame)
 {
+  // ensure style="..." changes are completely ignores when building diffs
+  DOMdiff.setGlobalIgnore(["style"]);
+
+  // find diffs. Then apply them.
   var routes = DOMdiff.getDiff(d1,d2), route, iroute,
       d, lastRoute = routes.length, v,
       log = "";

@@ -5,7 +5,10 @@
  */
 var DOMdiff = (function() {
 
-  var diffObject = {};
+  var diffObject = {
+    globalIgnore: [],
+    setGlobalIgnore: function(list) { this.globalIgnore = list; }
+  };
 
   var debug = false;
   var log = function() {
@@ -59,18 +62,20 @@ var DOMdiff = (function() {
       var attr,
           a,
           attributes = element.attributes,
-          len = attributes.length;
+          len = attributes.length,
+          ignore = diffObject.globalIgnore;
 
-      var ignore = element.getAttribute("data-diff-ignore"),
-          el = element;
-      while(el.parentNode) {
-        el = el.parentNode;
-        if (el.getAttribute("data-diff-ignore-inherit")) {
-          ignore += " " + el.getAttribute("data-diff-ignore-inherit");
-        }
-      }
-      if(ignore) { ignore = ignore.split(/\s+/); }
-          
+      // append global ignore with local ignore
+      if(element.getAttribute("data-diff-ignore")) {
+        ignore = ignore.concat(element.getAttribute("data-diff-ignore").split(" ")); }
+
+      // append the ignore list with inherited ignores, too
+      var parent = element;
+      while(parent.parentNode) {
+        parent = parent.parentNode;
+        if (parent.getAttribute("data-diff-ignore-inherit")) {
+          ignore = ignore.concat(parent.getAttribute("data-diff-ignore-inherit").split(" ")); }}
+
       for (a=0; a<len; a++) {
         attr = attributes[a];
         if(ignore && ignore.indexOf(attr.nodeName)>-1) {
@@ -155,17 +160,19 @@ var DOMdiff = (function() {
       var attributes = e1.attributes,
           len = attributes.length,
           a, a1, a2, attr,
-          ignore = e1.getAttribute("data-diff-ignore");
-
-      var el = e1;
-      while(el.parentNode) {
-        el = el.parentNode;
-        if (el.getAttribute("data-diff-ignore-inherit")) {
-          ignore += " " + el.getAttribute("data-diff-ignore-inherit");
-        }
-      }
-      if(ignore) { ignore = ignore.split(/\s+/); }
+          ignore = diffObject.globalIgnore;
       
+      // append global ignore with local ignore
+      if(e1.getAttribute("data-diff-ignore")) {
+        ignore = ignore.concat(e1.getAttribute("data-diff-ignore").split(" ")); }
+
+      // append the ignore list with inherited ignores, too
+      var parent = e1;
+      while(parent.parentNode) {
+        parent = parent.parentNode;
+        if (parent.getAttribute("data-diff-ignore-inherit")) {
+          ignore = ignore.concat(parent.getAttribute("data-diff-ignore-inherit").split(" ")); }}
+    
       // attribute insertion/modification diff
       for (a=0; a<len; a++) {
         attr = attributes[a].nodeName;
@@ -370,44 +377,16 @@ var DOMdiff = (function() {
 
     // FIXME: in the above check, relocations end up
     //        being treated as remove/inserts -- this
-    //        is not what we want!
+    //        is not what we want, ideally.
 
 
-    // different attributes?
-    if(e1.getAttribute && e2.getAttribute) {
-      var attrs = ["id",     // ids MUST be identical, nice and simple
-                   "style",  // this one's tricky, and I don't want to write a full CSS parser right now. FIXME: later
-                   "class",  // this one's less tricky, but still requires split/sort comparison. FIXME: later
-                   "type",
-                   "value",
-                   "href",
-                   "src",
-                   "rel",
-                   "__more__attributes__here__"],
-          a, last = attrs.length,
-          attr, a1, a2,
-          ignore = e1.getAttribute("data-diff-ignore");
-
-      var el = e1;
-      while(el.parentNode) {
-        el = el.parentNode;
-        if (el.getAttribute("data-diff-ignore-inherit")) {
-          ignore += " " + el.getAttribute("data-diff-ignore-inherit");
-        }
-      }
-      if(ignore) { ignore = ignore.split(/\s+/); }
-
-      for(a=0; a<last; a++) {
-        attr = attrs[a];
-        if(ignore && ignore.indexOf(attr)>-1) {
-          continue;
-        }       
-        a1 = e1.getAttribute(attr);
-        a2 = e2.getAttribute(attr);
-        if(a1==a2 || (!a1 && a2=="") || (!a2 && a1=="")) continue;
-        return -1;
-      }
-    }
+    // Check for attribute differences
+    //
+    // FIXME: by returning -1 we signal "full change",
+    //        which will fully refresh content inside
+    //        if it.
+    var outerDiff = outerEquality(e1, e2);
+    if(outerDiff.length > 0) return -1;
 
     // nothing left to fail on - consider
     // these two elements equal.
