@@ -14,6 +14,53 @@
 
 **/
 
+// ================= Very simple API for onbounce="..." handling
+
+var OnBounceAPI = {
+  destroy: function(selector) {
+    var element = document.querySelector(selector);
+    if(!element) return
+    var box2d = element.box2dObject;
+    scheduleDestroy(box2d);
+    element.setAttribute("data-destroyed",true);
+  },
+
+  // set an HTML element's css class to something (reverting after [expiry] seconds)
+  setClass: function(selector, className, expiry) {
+    var element = document.querySelector(selector);
+    if(!element) return;
+    element.classList.add(className);
+    if(expiry) {
+      setTimeout(function() { element.classList.remove(className); }, expiry);
+    }
+  },
+
+  // play a sound from an <audio> element
+  audio: new Audio(),
+  play: function(selector) {
+    var element = document.querySelector(selector);
+    if(!element) return;
+    this.audio.src = element.src;
+    this.audio.play();
+  },
+
+  // keep score
+  tally: function(selector, increment) {
+    var element = document.querySelector(selector);
+    if(element) {
+      var value = (element.innerHTML == "" ? 0 : parseInt(element.innerHTML));
+      element.innerHTML = value+parseInt(increment);
+    }
+  },
+
+  // simple scoring
+  scoreLeft: function(val) { this.tally(".scores .left", val || 1);},
+  scoreRight: function(val) { this.tally(".scores .right", val || 1);}
+}
+
+
+// ================= Simplistic keyhandling (for now...)
+
 var keys = [false, false, false, false];
 
 function keyPressed(e) {
@@ -42,39 +89,6 @@ function keyReleased(e) {
 document.querySelector("#world").onkeydown = keyPressed;
 document.querySelector("#world").onkeyup = keyReleased;
 
-
-// ================= Very simple API for onbounce="..." handling
-
-
-var OnBounceAPI = {
-  destroy: function(selector) {
-    var element = document.querySelector(selector);
-    if(!element) return
-    var box2d = element.box2dObject;
-    scheduleDestroy(box2d);
-    element.setAttribute("data-destroyed",true);
-  },
-
-  // set an HTML element's css class to something (reverting after [expiry] seconds)
-  setClass: function(selector, className, expiry) {
-    var element = document.querySelector(selector);
-    if(!element) return;
-    element.classList.add(className);
-    if(expiry) {
-      setTimeout(function() { element.classList.remove(className); }, expiry);
-    }
-  },
-
-  // play a sound from an <audio> element
-  audio: new Audio(),
-  play: function(selector) {
-    var element = document.querySelector(selector);
-    if(!element) return;
-    this.audio.src = element.src;
-    this.audio.play();
-  }
-}
-
 // ================= DRAW LOOP REQUEST
 
 window.requestAnimFrame = (function(){
@@ -92,8 +106,10 @@ window.requestAnimFrame = (function(){
 
 var wins = function(selector) {
   var element = document.querySelector(selector);
-  var value = parseInt(element.innerHTML);
-  element.innerHTML = value+1;
+  if(element) {
+    var value = (element.innerHTML == "" ? 0 : parseInt(element.innerHTML));
+    element.innerHTML = value+1;
+  }
 };
 
 var leftWins = function()  { wins(".scores .left");  };
