@@ -68,6 +68,7 @@
               success: function(result) {
                 var url = result['published-url'];
                 var path = '/' + url.match(/\/([A-Za-z0-9]+)$/)[1];
+                //var path = '/' + url.match(/\/([A-Za-z0-9=]+)$/)[1];
                 cb(null, {path: path, url: options.publishURL + path});
               }
             });
@@ -182,6 +183,8 @@
 //          publishURL: "http://poof.hksr.us"
           hackpubURL: "http://pomax.nihongoresources.com/downloads/temp/friendlypublish/post.php",
           publishURL: "http://pomax.nihongoresources.com/downloads/temp/friendlypublish/page"
+//          hackpubURL: "http://www.hackagame.org",
+//          publishURL: "http://www.hackagame.org/examples/remixed"
         })
       });
     });
