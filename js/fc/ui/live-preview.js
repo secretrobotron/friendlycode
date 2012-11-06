@@ -9,7 +9,7 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
         Slowparse = options.slowparse,
         iframe = document.createElement("iframe"),
         frame;
-   
+
     // set up the iframe
     options.previewArea.append(iframe);
 
@@ -56,6 +56,6 @@ define(["jquery", "backbone-events"], function($, BackboneEvents) {
     BackboneEvents.mixin(self);
     return self;
   };
-  
+
   return LivePreview;
 });

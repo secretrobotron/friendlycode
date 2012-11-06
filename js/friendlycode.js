@@ -16,14 +16,14 @@ define(function(require) {
         pageToLoad = options.pageToLoad,
         defaultContent = options.defaultContent || DefaultContentTemplate(),
         remixURLTemplate = options.remixURLTemplate ||
-          location.protocol + "//" + location.host + 
+          location.protocol + "//" + location.host +
           location.pathname + "#{{VIEW_URL}}",
         editor = Editor({
           container: options.container,
           allowJS: options.allowJS
         }),
         ready = $.Deferred();
-    
+
     var modals = Modals({
       container: $('<div class="friendlycode-base"></div>')
         .appendTo(document.body)
@@ -40,7 +40,7 @@ define(function(require) {
       window: window,
       currentPage: pageToLoad
     });
-    
+
     function doneLoading() {
       editor.container.removeClass("friendlycode-loading");
       editor.panes.codeMirror.clearHistory();
@@ -56,6 +56,13 @@ define(function(require) {
       editor.panes.codeMirror.refresh();
       editor.panes.codeMirror.focus();
       ready.resolve();
+
+      // FIXME: This is a hack to overcome codemirror's line-mis-numbering.
+      //        I can't find a good place to issue this command, and this is
+      //        the most definitive "we are actually done at the moment" point.
+      setTimeout(function correctCodeMirrorLineNumbering() {
+        editor.panes.codeMirror.refresh();
+      },10);
     }
 
     editor.toolbar.setStartPublish(publishUI.start);
@@ -71,11 +78,11 @@ define(function(require) {
       // to be what they expect it to be, just in case.
       parachute.save();
       // Set the URL to be the new URL to remix the page the user just
-      // published, so they can share/bookmark the URL and it'll be what 
+      // published, so they can share/bookmark the URL and it'll be what
       // they expect it to be.
       pageManager.changePage(info.path, info.remixURL);
     });
-    
+
     parachute.changePage(pageManager.currentPage());
 
     if (!pageManager.currentPage()) {
@@ -95,7 +102,7 @@ define(function(require) {
           doneLoading();
         }
       });
-    
+
     return {
       codeMirror: editor.panes.codeMirror,
       parachute: parachute,

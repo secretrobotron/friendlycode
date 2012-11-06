@@ -221,6 +221,7 @@ function diffApply(d1, d2, frame)
           log += "    left["+entry[0]+"] <-> right["+entry[1]+"]\n";// ("+serialise(nodes[entry[1]])+")\n";
 
           // IFRAME UPDATING
+          /*
           if(false) {
             // NOTE: we don't update based on relocations,
             //       because DOMdiff currently has problems
@@ -241,6 +242,7 @@ function diffApply(d1, d2, frame)
               element.insertBefore(child, next);
             }
           }
+          */
           // IFRAME UPDATING
         }
       }

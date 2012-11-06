@@ -80,19 +80,19 @@ var DOMdiff = (function() {
         attr = attributes[a];
         if(ignore && ignore.indexOf(attr.nodeName)>-1) {
           continue;
-        }  
+        }
         hashString += attr.nodeName+":"+attr.nodeValue;
       }
     }
 
     // update the hash
     hash = hashCode( (hashString+element.textContent).replace(/\s+/g,''));
-    
+
     // if children, work in their hash, too.
     for(child = last-1; child >=0; child--) {
       hash = (hash * 31 + hashAll(element.childNodes[child])) & 0xFFFFFFFF;
     }
-    
+
     // okay, we're done. Set and return
     element["hashCode"] = hash;
     return hash;
@@ -110,7 +110,7 @@ var DOMdiff = (function() {
     return narr;
   };
   window.arrayCopy = arrayCopy;
-    
+
 
   /**
    * Take a snapshot of a NodeSet, and return
@@ -147,7 +147,7 @@ var DOMdiff = (function() {
    */
   function outerEquality(e1, e2) {
     var diff = [];
-    
+
     // do the tags agree?
     if(e1.nodeType===1 && e2.nodeType===1) {
       if(e1.nodeName !== e2.nodeName) {
@@ -161,7 +161,7 @@ var DOMdiff = (function() {
           len = attributes.length,
           a, a1, a2, attr,
           ignore = diffObject.globalIgnore;
-      
+
       // append global ignore with local ignore
       if(e1.getAttribute("data-diff-ignore")) {
         ignore = ignore.concat(e1.getAttribute("data-diff-ignore").split(" ")); }
@@ -172,19 +172,19 @@ var DOMdiff = (function() {
         parent = parent.parentNode;
         if (parent.getAttribute("data-diff-ignore-inherit")) {
           ignore = ignore.concat(parent.getAttribute("data-diff-ignore-inherit").split(" ")); }}
-    
+
       // attribute insertion/modification diff
       for (a=0; a<len; a++) {
         attr = attributes[a].nodeName;
         if(ignore && ignore.indexOf(attr)>-1) {
           continue;
-        }       
+        }
         a1 = e1.getAttribute(attr);
         a2 = e2.getAttribute(attr);
         if(a1==a2) continue;
         diff.push([attr,a1,a2]);
       }
-      
+
       // attribute removal diff
       attributes = e2.attributes;
       len = attributes.length;
@@ -192,7 +192,7 @@ var DOMdiff = (function() {
         attr = attributes[a].nodeName;
         if(ignore && ignore.indexOf(attr)>-1) {
           continue;
-        }       
+        }
         a1 = e1.getAttribute(attr);
         a2 = e2.getAttribute(attr);
         if(a1==a2) continue;
@@ -292,7 +292,7 @@ var DOMdiff = (function() {
         removals.push([c, child]);
       }
     }
-    
+
     // and then insertions, based on unmarked c1 elements
     last = c1.length;
     for(c=0; c<last; c++) {
@@ -368,7 +368,7 @@ var DOMdiff = (function() {
       // recurse to see if these children differ
       child = e1.childNodes[i];
       eq = equal(child, e2.childNodes[i], after);
-      if(eq !== 0) {      
+      if(eq !== 0) {
         // (first) difference found. "eq" will indicate
         // which childNodes position the diff is found at.
         return [i].concat(eq);
@@ -457,6 +457,6 @@ var DOMdiff = (function() {
     return "{" + ret.join(", ") + "}";
   };
   window.serialise = serialise;
-  
+
   return diffObject;
 }());
