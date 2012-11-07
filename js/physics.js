@@ -425,6 +425,8 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
         pos.x = ball.start_x;
         pos.y = ball.start_y;
         ball.b2.SetPosition(pos);
+        ball.b2.GetLinearVelocity().Normalize();
+        ball.scaleSpeed(3);
       }
     });
 
