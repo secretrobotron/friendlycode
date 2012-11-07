@@ -71,8 +71,8 @@
               },
               success: function(result) {
                 var url = result['published-url'];
-                var path = '/' + url.match(/\/([A-Za-z0-9]+)$/)[1];
-                //var path = '/' + url.match(/\/([A-Za-z0-9=]+)$/)[1];
+                //var path = '/' + url.match(/\/([A-Za-z0-9]+)$/)[1];
+                var path = '/' + url.match(/\/([A-Za-z0-9=]+)$/)[1];
                 cb(null, {path: path, url: options.publishURL + path});
               }
             });
@@ -123,8 +123,8 @@ Imagine them like a sandwich that keep the ball bouncing back when it hits the e
 
     ‹!-- The second pair of ‹divs› are the player paddles. They're actually almost the same as walls, except they can respond to the keyboard. If you press "w" or "s" you will move the left padding up/down, and if you press the "up" or "down"cursor keys, you will move the right paddle up/down. Of course, we can play around with these paddles. Try giving your players two paddles, for instance by adding a new div! --›
 
-    ‹div class="paddle left"›‹/div›
-    ‹div class="paddle right"›‹/div›
+    ‹div class="paddle left"  data-key-up="w" data-key-down="s"›‹/div›
+    ‹div class="paddle right" data-key-up="up" data-key-down="down"›‹/div›
 
     ‹!-- This final ‹div› is our ball. Normally, Pong has one ball, but what if we used more than one....? Old plain Pong would instantly become super-awesome multiplayer pong! Let's try to do that by copying and pasting ‹div class="ball" data-friction="0" data-bounciness="1"›‹/div› --›
 
