@@ -17,6 +17,7 @@
 // ================= Very simple API for onbounce="..." handling
 
 var OnBounceAPI = {
+  // destroy the box2d object associated with the selector's element
   destroy: function(selector) {
     var element = document.querySelector(selector);
     if(!element) return
@@ -35,6 +36,14 @@ var OnBounceAPI = {
     }
   },
 
+  // scale the speed box2d object associated with the selector's element
+  scaleSpeed: function(selector, factor) {
+    var element = document.querySelector(selector);
+    if(!element) return;
+    var box2d = element.box2dObject;
+    box2d.scaleSpeed(factor);
+  },
+
   // play a sound from an <audio> element
   audio: new Audio(),
   play: function(selector) {
@@ -44,7 +53,7 @@ var OnBounceAPI = {
     this.audio.play();
   },
 
-  // keep score
+  // keep score by incrementing the selector's innerHTML value by <increment>
   tally: function(selector, increment) {
     var element = document.querySelector(selector);
     if(element) {
@@ -53,7 +62,7 @@ var OnBounceAPI = {
     }
   },
 
-  // simple scoring
+  // simple scoring for the "left" and "right" spans in the score pane
   scoreLeft: function(val) { this.tally(".scores .left", val || 1);},
   scoreRight: function(val) { this.tally(".scores .right", val || 1);}
 }
@@ -129,6 +138,12 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
     return;
   }
 
+// ================= SCALING IS HARDCORE REQUIRED: 30 pixels to 1 meter
+
+var BOX2D_PIXELS_PER_METER = 30;
+function toBox2DValue(v) { return v/BOX2D_PIXELS_PER_METER; }
+function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
+
 // ================= SHORTCUT ALIASSES
 
   var b2Vec2 = Box2D.Common.Math.b2Vec2,
@@ -152,22 +167,22 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
     var bbox = element.getBoundingClientRect();
 
     this.el = element;
-    this.width = bbox.width;
-    this.height = bbox.height;
+    this.width = toBox2DValue(bbox.width);
+    this.height = toBox2DValue(bbox.height);
 
     var bodyDef = new b2BodyDef;
     bodyDef.type = b2Body.b2_staticBody;
 
     var fixDef = new b2FixtureDef;
     fixDef.shape = new b2PolygonShape;
-    fixDef.shape.SetAsBox(bbox.width/2, bbox.height/2);
+    fixDef.shape.SetAsBox(toBox2DValue(bbox.width/2), toBox2DValue(bbox.height/2));
 
-    fixDef.density = 10;
+    fixDef.density = 1;
     fixDef.friction = 0;
     fixDef.restitution = 0;
 
-    bodyDef.position.x = bbox.left - pbbox.left + bbox.width/2;
-    bodyDef.position.y = bbox.top - pbbox.top + bbox.height/2;
+    bodyDef.position.x = toBox2DValue(bbox.left - pbbox.left + bbox.width/2);
+    bodyDef.position.y = toBox2DValue(bbox.top - pbbox.top + bbox.height/2);
 
     this.start_x = bodyDef.position.x;
     this.start_y = bodyDef.position.y;
@@ -188,13 +203,13 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
     center: function() { return this.b2.GetWorldCenter(); },
     update: function() {
       var c = this.center();
-      this.el.style.left = (c.x-this.width/2) + "px";
-      this.el.style.top = (c.y-this.height/2) + "px";
+      this.el.style.left = fromBox2DValue(c.x-this.width/2) + "px";
+      this.el.style.top = fromBox2DValue(c.y-this.height/2) + "px";
 
       // make sure our dimensions are still correct, based on CSS
       var bbox = this.el.getBoundingClientRect(),
-          w = parseInt(bbox.width),
-          h = parseInt(bbox.height);
+          w = toBox2DValue(parseInt(bbox.width)),
+          h = toBox2DValue(parseInt(bbox.height));
       if((w|0)!=(this.width|0) || (h|0)!=(this.height|0)) {
         var fixdef = this.b2.GetFixtureList(),
             shape = fixdef.GetShape();
@@ -205,8 +220,8 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
       // modify as box
       if(shape.SetAsBox) {
         shape.SetAsBox(w/2, h/2);
-        this.el.style.left = (c.x-w/2) + "px";
-        this.el.style.top = (c.y-h/2) + "px";
+        this.el.style.left = fromBox2DValue(c.x-w/2) + "px";
+        this.el.style.top = fromBox2DValue(c.y-h/2) + "px";
       }
       // modify as circle
       else if(shape.SetRadius) {
@@ -214,8 +229,8 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
         //        although, really, we want to treat them as
         //        high-n polygons.
         shape.SetRadius((w+h)/4);
-        this.el.style.left = (c.x-w/2) + "px";
-        this.el.style.top = (c.y-h/2) + "px";
+        this.el.style.left = fromBox2DValue(c.x-w/2) + "px";
+        this.el.style.top = fromBox2DValue(c.y-h/2) + "px";
       }
       // universal binds
       this.b2.SetPosition(c);
@@ -229,6 +244,15 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
     applyForce: function(x,y) {
       var c = this.center();
       this.b2.ApplyForce(new b2Vec2(x,y), c);
+    },
+    setSpeed: function(x, y) {
+      this.b2.SetAwake(true);
+      this.b2.SetLinearVelocity(new b2Vec2(x,y));
+    },
+    scaleSpeed: function(f) {
+      var v = this.b2.GetLinearVelocity();
+      v.Multiply(f);
+      this.setSpeed(v.x, v.y);
     },
     moveBy: function(x,y) {
       var v = this.b2.GetPosition();
@@ -274,22 +298,22 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
     var bbox = element.getBoundingClientRect();
 
     this.el = element;
-    this.width = bbox.width;
-    this.height = bbox.height;
+    this.width = toBox2DValue(bbox.width);
+    this.height = toBox2DValue(bbox.height);
 
     var bodyDef = new b2BodyDef;
     bodyDef.type = b2Body.b2_dynamicBody;
 
     var fixDef = new b2FixtureDef;
     fixDef.shape = new b2CircleShape; //new b2PolygonShape;
-    fixDef.shape.SetRadius(bbox.width/2);
+    fixDef.shape.SetRadius(toBox2DValue(bbox.width/2));
 
     fixDef.density = element.getAttribute("data-density") || 0;
     fixDef.friction = element.getAttribute("data-friction") || 0;
     fixDef.restitution = element.getAttribute("data-elasticity") || element.getAttribute("data-bounciness") || 1;
 
-    bodyDef.position.x = bbox.left - pbbox.left + bbox.width/2;
-    bodyDef.position.y = bbox.top - pbbox.top + bbox.height/2;
+    bodyDef.position.x = toBox2DValue(bbox.left - pbbox.left + bbox.width/2);
+    bodyDef.position.y = toBox2DValue(bbox.top - pbbox.top + bbox.height/2);
 
     this.start_x = bodyDef.position.x;
     this.start_y = bodyDef.position.y;
@@ -353,7 +377,7 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
   var scheduledRemoval = [];
 
   var movePaddles = function() {
-   var speed = 2; // pixels per event trigger
+   var speed = 0.1; // pixels per event trigger
    if(leftPaddle) {
      if(keys[0]) leftPaddle.moveBy(0,-speed);
      if(keys[1]) leftPaddle.moveBy(0,speed);
@@ -394,8 +418,9 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
       var pos = ball.b2.GetPosition(),
           w = ball.width/2,
           h = ball.height/2;
-      if (pos.x+w < 0 || pos.x-w > worldBBox.width) {
-        if(pos.x+w<0) { rightWins(); }
+      // out of bounds?
+      if (pos.x+w < 0 || pos.x-w > toBox2DValue(worldBBox.width) || pos.y+h < 0 || pos.y-h > toBox2DValue(worldBBox.height)) {
+        if(pos.x+w < 0) { rightWins(); }
         else { leftWins(); }
         pos.x = ball.start_x;
         pos.y = ball.start_y;
@@ -427,6 +452,25 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
 
     var worldParent = document.querySelector("#world");
     worldBBox = worldParent.getBoundingClientRect();
+
+    // fix gravity
+    (function(){
+      var grav = worldParent.getAttribute("data-gravity");
+      if(grav) {
+        var values = grav.split(",");
+        if(values.length==2 && typeof values[0] !== "undefined" && typeof values[1] !== "undefined") {
+          var xval = parseFloat(values[0]);
+          if(xval != values[0]) return;
+          var yval = parseFloat(values[1]);
+          if(yval != values[1]) return;
+          gravity.x = xval;
+          gravity.y = yval;
+          world = new b2World(gravity, true);
+        }
+      }
+    }());
+
+    // set up the bounce listening
     world.SetContactListener(createCollisionListener());
 
     // walls
@@ -470,11 +514,31 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
       for(i=0; i<len; i++) {
         ballElement = ballElements[i];
         ball = new Ball(worldParent, ballElement, world);
-        ball.applyImpulse(-200,150);
+        ball.applyForce(gravity.x, gravity.y);
+        ball.applyImpulse(-3,2);
         balls.push(ball);
       }
     }());
 
+    worldParent.onchange = (function(element) {
+      return function() {
+        // handle gravity
+        var grav = element.getAttribute("data-gravity");
+        if(grav) {
+          var values = grav.split(",");
+          if(values.length==2 && typeof values[0] !== "undefined" && typeof values[1] !== "undefined") {
+            var xval = parseFloat(values[0]);
+            if(xval != values[0]) return;
+            var yval = parseFloat(values[1]);
+            if(yval != values[1]) return;
+            bars.forEach(function(e) { e.applyForce(xval, yval); });
+            balls.forEach(function(e) { e.applyForce(xval, yval); });
+            gravity.x = xval;
+            gravity.y = yval;
+          }
+        }
+      }
+    }(worldParent));
 
     /**
      * What do we do when a DOM node is inserted into the world?
@@ -488,7 +552,7 @@ var balls = [], bars = [], leftPaddle, rightPaddle, worldBBox;
         // new ball object?
         if(!!classes.match(new RegExp("\\b" + 'ball' + "\\b",""))) {
           var ball = new Ball(worldParent, el, world);
-          ball.applyImpulse(Math.random() > 0.5 ? 200 : -200, Math.random() > 0.5 ? 150 : -150);
+          ball.applyImpulse((Math.random() * 4) - 2, (Math.random() * 3) - 1.5);
           balls.push(ball);
         }
 

@@ -109,7 +109,6 @@ function diffApply(d1, d2, frame)
             var element = frame.find(iroute);
             if(entry[1]==null) { element.removeAttribute(entry[0]); }
             else { element.setAttribute(entry[0], entry[1]); }
-
             if (element.onchange) {
               frame.runJavaScript(element.onchange);
             }
