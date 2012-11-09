@@ -19,45 +19,59 @@
 var OnBounceAPI = {
   // destroy the box2d object associated with the selector's element
   destroy: function(selector) {
-    var element = document.querySelector(selector);
-    if(!element) return
-    var box2d = element.box2dObject;
-    scheduleDestroy(box2d);
-    element.setAttribute("data-destroyed",true);
+    var elements = document.querySelectorAll(selector);
+    var e, element, last=elements.length;
+    for(e=0; e<last; e++) {
+      element = elements[e];
+      var box2d = element.box2dObject;
+      scheduleDestroy(box2d);
+      element.setAttribute("data-destroyed",true);
+    }
   },
 
   // set an HTML element's css class to something (reverting after [expiry] seconds)
   setClass: function(selector, className, expiry) {
-    var element = document.querySelector(selector);
-    if(!element) return;
-    element.classList.add(className);
-    if(expiry) {
-      setTimeout(function() { element.classList.remove(className); }, expiry);
+    var elements = document.querySelector(selector);
+    var e, element, last=elements.length;
+    for(e=0; e<last; e++) {
+      element = elements[e];
+      element.classList.add(className);
+      if(expiry) {
+        setTimeout(function() { element.classList.remove(className); }, expiry);
+      }
     }
   },
 
   // scale the speed box2d object associated with the selector's element
   scaleSpeed: function(selector, factor) {
-    var element = document.querySelector(selector);
-    if(!element) return;
-    var box2d = element.box2dObject;
-    box2d.scaleSpeed(factor);
+    var elements = document.querySelectorAll(selector);
+    var e, element, last=elements.length;
+    for(e=0; e<last; e++) {
+      element = elements[e];
+      var box2d = element.box2dObject;
+      box2d.scaleSpeed(factor);
+    }
   },
 
   // play a sound from an <audio> element
   audio: new Audio(),
   play: function(selector) {
-    var element = document.querySelector(selector);
-    if(!element) return;
-    this.audio.src = element.src;
-    this.audio.play();
+    var elements = document.querySelectorAll(selector);
+    var e, element, last=elements.length;
+    for(e=0; e<last; e++) {
+      element = elements[e];
+      this.audio.src = element.src;
+      this.audio.play();
+    }
   },
 
   // keep score by incrementing the selector's innerHTML value by <increment>
   tally: function(selector, increment) {
-    var element = document.querySelector(selector);
-    if(element) {
-      var value = (element.innerHTML == "" ? 0 : parseInt(element.innerHTML));
+    var elements = document.querySelectorAll(selector);
+    var e, element, last=elements.length, value;
+    for(e=0; e<last; e++) {
+      element = elements[e];
+      value = (element.innerHTML == "" ? 0 : parseInt(element.innerHTML));
       element.innerHTML = value+parseInt(increment);
     }
   },
@@ -387,35 +401,7 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
     this.b2.SetUserData({element: element, object: this});
 
     // key listening
-    this.keyHandlers = {};
-
-    var ukey = element.getAttribute("data-key-up");
-    if(ukey !== null && typeof ukey !== "undefined") {
-      ukey = domKeyMapper.getKeyCode(ukey);
-      this.keyHandlers[ukey] = (function(bar) {
-        return function() { bar.moveBy(0, -0.1); };
-      }(this)); }
-
-    var dkey = element.getAttribute("data-key-down");
-    if(dkey !== null && typeof dkey !== "undefined") {
-      dkey = domKeyMapper.getKeyCode(dkey);
-      this.keyHandlers[dkey] = (function(bar) {
-        return function() { bar.moveBy(0, 0.1); };
-      }(this)); }
-
-    var lkey = element.getAttribute("data-key-left");
-    if(lkey !== null && typeof lkey !== "undefined") {
-      lkey = domKeyMapper.getKeyCode(lkey);
-      this.keyHandlers[lkey] = (function(bar) {
-        return function() { bar.moveBy(-0.1, 0); };
-      }(this)); }
-
-    var rkey = element.getAttribute("data-key-right");
-    if(rkey !== null && typeof rkey !== "undefined") {
-      rkey = domKeyMapper.getKeyCode(rkey);
-      this.keyHandlers[rkey] = (function(bar) {
-        return function() { bar.moveBy(0.1, 0); };
-      }(this)); }
+    this.updateKeys();
   };
   Bar.prototype = {
     world: null,
@@ -459,6 +445,27 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
       this.b2.SetPosition(c);
       this.width = w;
       this.height = h;
+    },
+    updateKeys: function() {
+      if (!this.el || !this.el.attributes) return;
+      this.keyHandlers = {};
+
+      var attrs = this.el.attributes, a, last=attrs.length, attr, splt, key, x, y;
+      for(a=0; a<last; a++) {
+        attr = attrs[a];
+        if(attr.name.match(/^data-key/)!==null) {
+          splt = attr.value.split(",");
+          if (splt.length===3) {
+            // formate: "key, <x, y> vector"
+            key = domKeyMapper.getKeyCode(splt[0].trim().toUpperCase());
+            x = parseFloat(splt[1].trim());
+            y = parseFloat(splt[2].trim());
+            this.keyHandlers[key] = (function(bar,x,y) {
+              return function() { bar.moveBy(x,y); };
+            }(this,x,y));
+          }
+        }
+      }
     },
     applyImpulse: function(x,y) {
       var c = this.center();
@@ -618,6 +625,15 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
     scheduledRemoval.push(body);
   }
 
+  var handleKeyPresses = function() {
+    bars.forEach(function(bar) {
+      bar.updateKeys();
+      keyDown.forEach(function(key) {
+        bar.handleKey(key);
+      });
+    });
+  };
+
   // draw loop
   var paused = false;
   var drawFrame = function() {
@@ -635,7 +651,7 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
     world.ClearForces();
 
     // allow the paddles to be moved based on keyinput
-    movePaddles();
+    handleKeyPresses();
 
     // check ball-in-world validity
     balls.forEach(function(ball) {
