@@ -399,9 +399,6 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
     // mark as reflected
     element.box2dObject = this;
     this.b2.SetUserData({element: element, object: this});
-
-    // key listening
-    this.updateKeys();
   };
   Bar.prototype = {
     world: null,
@@ -626,12 +623,12 @@ function fromBox2DValue(v) { return BOX2D_PIXELS_PER_METER*v; }
   }
 
   var handleKeyPresses = function() {
-    bars.forEach(function(bar) {
-      bar.updateKeys();
-      keyDown.forEach(function(key) {
-        bar.handleKey(key);
-      });
-    });
+    var fn = function(thing) {
+      thing.updateKeys();
+      keyDown.forEach(function(key) { thing.handleKey(key); });
+    };
+    bars.forEach(fn);
+    balls.forEach(fn);
   };
 
   // draw loop
