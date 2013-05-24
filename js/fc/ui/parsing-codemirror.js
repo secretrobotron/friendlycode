@@ -33,20 +33,29 @@ define([
     var parseDelay = givenOptions.parseDelay || 300;
     var time = givenOptions.time || window;
     var reparseTimeout;
+    var reparseDisabled=false;
 
     givenOptions.onChange = function() {
       codeMirror.trigger("change");
+      if (reparseDisabled)
+        return;
       if (reparseTimeout !== undefined)
         time.clearTimeout(reparseTimeout);
-      if (codeMirror.reparseEnabled)
-        reparseTimeout = time.setTimeout(reparse, parseDelay);
+      reparseTimeout = time.setTimeout(reparse, parseDelay);
     };
     givenOptions.onCursorActivity = onCursorActivity;
 
     var codeMirror = IndexableCodeMirror(place, givenOptions);
     BackboneEvents.mixin(codeMirror);
     codeMirror.reparse = reparse;
-    codeMirror.reparseEnabled = true;
+    codeMirror.noReparseDuring = function(cb) {
+      reparseDisabled = true;
+      try {
+        cb();
+      } finally {
+        reparseDisabled = false;
+      }
+    };
     return codeMirror;
   };
 });
