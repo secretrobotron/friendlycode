@@ -1,3 +1,6 @@
 [submodule "vendor/slowparse"]
 	path = vendor/slowparse
 	url = git://github.com/mozilla/slowparse.git
+[submodule "appbuilder"]
+	path = appbuilder
+	url = https://github.com/secretrobotron/appbuilder.git
