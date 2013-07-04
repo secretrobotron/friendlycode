@@ -24,8 +24,12 @@ define(["jquery"], function($) {
       loadCode: function(path, cb) {
         $.ajax({
           type: 'GET',
-          url: makeURL(path),
+          crossDomain: true,
+          url: makeURL('/' + path),
           dataType: 'text',
+          xhrFields: {
+            withCredentials: true
+          },          
           error: function(data) {
             cb(data);
           },
@@ -37,7 +41,7 @@ define(["jquery"], function($) {
       saveCode: function(data, originalURL, cb) {
         $.ajax({
           type: 'POST',
-          url: makeURL('/api/page'),
+          url: myOrigin + '/api/page',
           data: {
             'html': data,
             'original-url': originalURL || ''
@@ -47,7 +51,8 @@ define(["jquery"], function($) {
             cb(data);
           },
           success: function(data) {
-            cb(null, {path: data, url: baseURL + data});
+            data = JSON.parse(data);
+            cb(null, {path: data.code, url: data.url});
           }
         });
       }

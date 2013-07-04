@@ -198,12 +198,15 @@ define(["jquery", "./mark-tracker", "slowparse/slowparse"], function($, MarkTrac
         return function(element) {
           var pNode = getParallelNode(element, d);
           updateCodeForElement(c, element, pNode);
-          setTimeout(function(){c.reparse();}, 100);
+          //setTimeout(function(){c.reparse();}, 100);
         };
       }(docFrag, codeMirror));
       window.magicUpdate = magicUpdate;
       $(".preview-holder iframe")[0].contentWindow.magicUpdate = magicUpdate;
 
+      window.addEventListener('message', function (e) {
+        console.log('KABLAMP');
+      }, false);
 
       $(event.window).on("mousedown", "*", function(event) {
         var interval = intervalForElement(this, docFrag);

@@ -8,14 +8,13 @@
     "requirejs": "2.1.2",
     "jsdom": "0.2.19",
     "tap": "0.3.x",
-    "express": "2.5.x",
     "request": "2.12.0",
     "mkpath": "0.1.0",
     "commander": "1.1.x"
   },
   "engines": {
     "node": "0.8.x",
-    "npm":  "1.1.x"
+    "npm": "1.1.x"
   },
   "repository": {
     "type": "git",
@@ -25,5 +24,13 @@
   "scripts": {
     "optimize": "node bin/build-require.js",
     "test": "tap ./test/node-tap --tap"
+  },
+  "devDependencies": {
+    "knox": "~0.8.3",
+    "express": "~3.3.3",
+    "habitat": "~0.4.2",
+    "shortid": "~1.0.9",
+    "nunjucks": "~0.1.9",
+    "bitly": "~1.2.4"
   }
 }
